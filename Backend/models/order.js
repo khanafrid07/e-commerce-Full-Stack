@@ -12,12 +12,17 @@ let orderSchema = new mongoose.Schema({
         {
             product:{
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "Products"
+                ref: "Product"
             },
             quantity:{
                 type: Number,
                 default: 1
 
+            },
+            status: {
+                type: String,
+                enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
+                default: "Pending"
             }
         }
     ],
