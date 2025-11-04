@@ -8,6 +8,8 @@ const productSchema = new mongoose.Schema({
   stock: { type: Number, required: true },
   category: { type: String },
   user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  // status: { type: String, enum: ["Pending", "Shipped", "Delivered", "Cancelled"], default: "Pending" },
+
   images: [
     {
       url: String,       // image URL (main + previews all together)

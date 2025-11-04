@@ -5,7 +5,7 @@ import AddProduct from "../features/products/AddProduct.jsx";
 import ManageProducts from "../features/products/ManageProducts.jsx";
 // import ManageProducts from "./ManageProducts";
 // import Orders from "./Orders";
-
+import AdminOrder from "../Pages/AdminOrder.jsx";
 export default function DashboardLayout() {
   const [isOpen, setIsOpen] = useState(true);
   const [selectedPage, setSelectedPage] = useState("home");
@@ -18,7 +18,7 @@ export default function DashboardLayout() {
       case "add":
         return <AddProduct />;
       case "orders":
-        return <Orders />;
+        return <AdminOrder/>;
       default:
         return <p>Good</p> ;
     }

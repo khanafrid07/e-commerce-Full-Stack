@@ -44,10 +44,18 @@ export const orderApi = createApi({
                 method: "DELETE"
             }),
             invalidatesTags: ["orders"]
+        }),
+        cancelOrder: builder.mutation({
+            query: ({productId, orderId})=>({
+                url: `/orders/cancel-product/${orderId}/${productId}`,
+                method: "PUT",
+                
+            }),
+            invalidatesTags: ["orders"]
         })
         
     })
    
 })
 
-export const {useCreateOrderMutation, useDeleteOrderMutation, useGetOrdersQuery, useSingleOrderQuery, useUpdateOrderMutation} = orderApi
+export const {useCreateOrderMutation, useDeleteOrderMutation, useGetOrdersQuery, useSingleOrderQuery, useUpdateOrderMutation, useCancelOrderMutation} = orderApi
