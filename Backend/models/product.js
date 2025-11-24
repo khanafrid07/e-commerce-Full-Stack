@@ -1,29 +1,63 @@
 const mongoose = require("mongoose");
 
-
-const productSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: [{ type: String }],
-  price: { type: Number, required: true },
-  stock: { type: Number, required: true },
-  category: { type: String },
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  // status: { type: String, enum: ["Pending", "Shipped", "Delivered", "Cancelled"], default: "Pending" },
-
-  images: [
-    {
-      url: String,       // image URL (main + previews all together)
-      filename: String,
-      isMain: { type: Boolean, default: false } // mark the main image
-    },
-  ],
+const variantSchema = new mongoose.Schema({
+  typeValues: { type: Object, required: true }, // { Size: "M" }
+  stock: { type: Number, default: 0 },
+  price: { type: Number, default: 0 },
 });
 
 
 
-productSchema.path("images").validate(function (images) {
-  return images.every((img) => !img.previewImages || img.previewImages.length <= 5);
-}, "Each image can have up to 5 preview images only.");
+const productSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
 
-const Product = mongoose.model("Product", productSchema);
-module.exports = Product;
+    description: {
+      type: String,
+      required: true,
+    },
+
+    basePrice: {
+      type: Number,
+      required: true,
+    },
+
+    stock: {
+      type: Number,
+      default: 0,
+    },
+
+    category: {
+      main: { type: String, required: true },
+      sub: { type: String, required: true },
+      gender: { type: String, required: true },
+    },
+
+    images: [
+      {
+        url: {type: String, required: true},
+        isMain: {type: Boolean, default:false},
+        fileName: String
+      }
+    ],
+
+    variants: [variantSchema],
+
+    details: [{
+      type: Object,
+      default: {},
+    }],
+
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  { timestamps: true }
+);
+
+module.exports = mongoose.model("Product", productSchema);
