@@ -3,7 +3,7 @@ const router = express.Router()
 const Product = require("../models/product.js")
 const verifyToken = require("../middlewares/verifyUser.js")
 const multer = require("multer")
-const upload = multer({ dest: 'uploads/' })
+const upload = require("../config/multer.js")
 router.get("/", async (req, res) => {
   try {
     let allProducts = await Product.find()
@@ -25,117 +25,107 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ message: "Error fetching product", error: err.message }); 8
   }
 });
-
-router.post(
-  "/",
-  verifyToken,
-  upload.fields([
-    { name: "image", maxCount: 1 },          // main image
-    { name: "previewImages", maxCount: 5 },  // preview images
-  ]),
-  async (req, res) => {
-    try {
-      const { title, description, price, stock, category } = req.body;
-
-      const images = [];
-
-      // Main image
-      if (req.files["image"] && req.files["image"][0]) {
-        const mainImage = req.files["image"][0];
-        images.push({
-          url: `${req.protocol}://${req.get("host")}/${mainImage.path.replace(/\\/g, "/")}`,
-          filename: mainImage.filename,
-          isMain: true,
-        });
-      } else {
-        images.push({
-          url: `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`,
-          filename: "default",
-          isMain: true,
-        });
-      }
-
-      // Preview images
-      if (req.files["previewImages"]) {
-        req.files["previewImages"].forEach((file) => {
-          images.push({
-            url: `${req.protocol}://${req.get("host")}/${file.path.replace(/\\/g, "/")}`,
-            filename: file.filename,
-            isMain: false,
-          });
-        });
-      }
-
-      const product = new Product({
-        title,
-        description,
-        price,
-        stock,
-        category,
-        images,
-        user: req.user?._id,
-      });
-
-      await product.save();
-      res.status(201).json({ message: "✅ Product created", product });
-    } catch (err) {
-      console.error("🔥 Error creating product:", err);
-      res.status(500).json({ message: "Error adding product", error: err.message });
-    }
-  }
-);
-
-router.put("/:id", upload.array("images"), async (req, res) => {
+router.post("/", verifyToken, upload.array("images", 5), async (req, res) => {
   try {
-    const { id } = req.params;
+    const { title, description, basePrice, stock, category, variants } = req.body;
+console.log(variants)
+    // Parse JSON fields
+    const parsedCategory = JSON.parse(category);
+    const parsedVariants = JSON.parse(variants);
 
-    // 🧱 1️⃣ Handle uploaded images safely
-    const uploadedImages = (req.files || []).map((file, idx) => ({
+
+    // Files from multer
+    const images = req.files; // <-- This will NOT be undefined now
+
+    if (!images || images.length === 0) {
+      return res.status(400).json({ message: "No images uploaded" });
+    }
+
+    // Build image URLs
+    const imageUrls = images.map((file, index) => ({
       url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
-      isMain: req.body[`isMain_${idx}`] === "true",
+      isMain: index === 0,
+      fileName: `${file.fieldname}${index}`
     }));
 
-    // 🧱 2️⃣ Handle existing images safely
-    let existingImages = [];
-    if (req.body.existingImages) {
-      try {
-        existingImages = JSON.parse(req.body.existingImages);
-      } catch (err) {
-        console.warn("⚠️ Failed to parse existingImages:", err.message);
-        existingImages = [];
-      }
-    }
+    // Save product
+    const newProduct = new Product({
+      title,
+      description,
+      basePrice,
+      stock,
+      category: parsedCategory,
+      variants: parsedVariants,
+   
+      images: imageUrls
+    });
 
-    // 🧱 3️⃣ Combine both
-    const allImages = [...existingImages, ...uploadedImages];
+    await newProduct.save();
 
-    // 🧱 4️⃣ Update the product
-    const updatedProduct = await Product.findByIdAndUpdate(
-      id,
-      {
-        title: req.body.title,
-        description: req.body.description,
-        price: req.body.price,
-        stock: req.body.stock,
-        category: req.body.category,
-        images: allImages,
-      },
-      { new: true }
-    );
+    res.status(201).json({ message: "Product added successfully", product: newProduct });
 
-    if (!updatedProduct) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
-    res.status(200).json({ message: "✅ Product updated", product: updatedProduct });
   } catch (err) {
-    console.error("🔥 Error updating product:", err);
-    res.status(500).json({ message: "Error updating product", error: err.message });
+    console.error(err);
+    res.status(500).json({ message: "Error adding product" });
   }
 });
 
+// ---------------- UPDATE product ----------------
+router.put("/:id", verifyToken, upload.array("images", 5), async (req, res) => {
+  try {
+    const {
+      title,
+      description,
+      basePrice,
+      stock,
+      category,
+      variants,
+      existingImages
+    } = req.body;
 
+    const product = await Product.findById(req.params.id);
+    if (!product)
+      return res.status(404).json({ message: "Product not found" });
 
+    // Parse JSON fields safely
+    const parsedCategory = category ? JSON.parse(category) : {};
+    const parsedVariants = variants ? JSON.parse(variants) : [];
+    const parsedExistingImages = existingImages ? JSON.parse(existingImages) : [];
+
+    // Update basic fields
+    product.title = title || product.title;
+    product.description = description || product.description;
+    product.basePrice = Number(basePrice) || 0;
+    product.stock = Number(stock) || 0;
+    product.category = parsedCategory;
+    product.variants = parsedVariants;
+
+    // Handle new uploaded images
+    const newImages = (req.files || []).map(file => ({
+      url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+      isMain: false,
+      fileName: file.filename,
+    }));
+
+    // Merge new and existing images safely
+    let images = [...parsedExistingImages, ...newImages].slice(0, 5);
+
+    // Ensure one main image
+    if (!images.some(img => img.isMain) && images.length) images[0].isMain = true;
+
+    product.images = images;
+
+    await product.save();
+
+    res.json({ message: "Product updated successfully", product });
+  } catch (err) {
+    console.error("Update product error:", err);
+    res.status(500).json({
+      message: "Error updating product",
+      error: err.message,
+    });
+  }
+});
 
 router.delete("/:id", verifyToken, async (req, res) => {
   try {

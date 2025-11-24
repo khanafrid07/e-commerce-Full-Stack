@@ -1,51 +1,57 @@
+const mongoose = require("mongoose");
 
-const mongoose = require("mongoose")
+const orderSchema = new mongoose.Schema({
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+    required: true,
+  },
 
-
-
-let orderSchema = new mongoose.Schema({
-    user: {
+  products: [
+    {
+      product: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
-    },
-    products: [
-        {
-            product:{
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "Product"
-            },
-            quantity:{
-                type: Number,
-                default: 1
-
-            },
-            status: {
-                type: String,
-                enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
-                default: "Pending"
-            }
-        }
-    ],
-    totalPrice: {
+        ref: "Product",
+        required: true,
+      },
+      quantity: {
         type: Number,
-        required: true
-    },
-    status: {
+        default: 1,
+      },
+      status: {
         type: String,
         enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
-        default: "Pending"
+        default: "Pending",
+      },
+      cancelReason: String,
+      cancelledAt: Date,
+      createdAt: { type: Date, default: Date.now },
     },
-    paymentMethod: {
-        type: String,
-        enum: ["Cash", "Card", "Online"],
-        default: "Cash"
-    },
-    shippingAddress: {
-    type: Object, 
-    required: true
+  ],
+
+  // 🟦 ADD THIS
+  status: {
+    type: String,
+    enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
+    default: "Pending",
   },
-}, {timestamps:true})
 
-let Order =  mongoose.model("Order", orderSchema)
+  totalPrice: {
+    type: Number,
+    required: true,
+  },
 
-module.exports = Order
+  paymentMethod: {
+    type: String,
+    enum: ["Cash", "Card", "Online"],
+    default: "Cash",
+  },
+
+  shippingAddress: {
+    type: Object,
+    required: true,
+  },
+}, { timestamps: true });
+
+const Order = mongoose.model("Order", orderSchema);
+module.exports = Order;
