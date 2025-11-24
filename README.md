@@ -1,6 +1,6 @@
 ##Full Stack e-commerce Website 
 
-##Description
+#Description
 I am currently building this  fully functional e-commerce websitr with MERN STACK
 
 
@@ -9,3 +9,4 @@ I am currently building this  fully functional e-commerce websitr with MERN STAC
 -TAILWIND.CSS
 -JAVASCRIPT,
 -REDUX RTK QUERY
+-motion-framer
