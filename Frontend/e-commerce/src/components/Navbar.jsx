@@ -17,7 +17,7 @@ export default function Navbar({ wishCount = 0 }) {
   }
 
   return (
-    <div className="navbar bg-white text-gray-800 shadow-md px-6 py-3 gap-4">
+    <div className="navbar bg-white text-gray-800 shadow-md px-6 py-3 gap-4 ">
       <Menu className="md:hidden" />
 
       {/* Brand */}

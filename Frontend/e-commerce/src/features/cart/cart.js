@@ -6,9 +6,7 @@ export const cartApi = createApi({
     baseUrl: "http://localhost:8080/api/cart",
     prepareHeaders: (headers) => {
       const token = localStorage.getItem("token");
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
-      }
+      if (token) headers.set("Authorization", `Bearer ${token}`);
       return headers;
     },
   }),
@@ -20,31 +18,32 @@ export const cartApi = createApi({
       providesTags: ["Cart"],
     }),
 
-    // ➕ Add product to cart
+    // ➕ Add product to cart (with variant support)
     addToCart: builder.mutation({
-      query: (data) => ({
+      query: ({ productId, quantity, variant }) => ({
         url: "/add",
         method: "POST",
-        body: data, // { productId, quantity }
+        body: { productId, quantity, variant },
       }),
       invalidatesTags: ["Cart"],
     }),
 
-    // 🔄 Update quantity
+    // 🔄 Update quantity (with variant support)
     updateCartItem: builder.mutation({
-      query: ({ id, quantity }) => ({
+      query: ({ id, quantity, variant }) => ({
         url: `/update/${id}`,
         method: "PUT",
-        body: { quantity },
+        body: { quantity, variant },
       }),
       invalidatesTags: ["Cart"],
     }),
 
-    // 🗑️ Remove a single item
+    // 🗑️ Remove a single item (with variant support)
     removeCartItem: builder.mutation({
-      query: (id) => ({
+      query: ({ id, variant }) => ({
         url: `/remove/${id}`,
         method: "DELETE",
+        body: { variant }, // pass variant for correct deletion
       }),
       invalidatesTags: ["Cart"],
     }),
