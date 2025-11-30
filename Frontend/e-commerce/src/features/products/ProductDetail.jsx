@@ -8,6 +8,7 @@ export default function ProductDetail() {
   const { id } = useParams(); 
   const navigate = useNavigate();
   const { data, error, isLoading } = useViewProductQuery(id);
+  console.log(data)
   const [editingProduct, setEditingProduct] = useState(false);
 
   const [deleteProduct, { isLoading: deleting }] = useDeleteProductMutation();

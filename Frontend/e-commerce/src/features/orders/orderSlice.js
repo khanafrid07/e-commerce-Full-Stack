@@ -31,9 +31,9 @@ export const orderApi = createApi({
             invalidatesTags:["orders"]
         }),
         updateOrder: builder.mutation({
-            query: ({id, data})=>({
-                url: `/orders/${id}`,
-                body: data,
+            query: ({productid, orderId, status})=>({
+                url: `/orders/${orderId}/${productid}`,
+                body: {status},
                 method: "PUT"
             }),
             invalidatesTags: ["orders"]

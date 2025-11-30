@@ -1,122 +1,186 @@
-import { useState } from "react";
-import { useAddToCartMutation } from "../features/cart/cart.js";
+import { useState, useEffect } from "react";
+import { ShoppingCart, Minus, Plus, CheckCircle2, XCircle } from "lucide-react";
+import { useAddToCartMutation } from "../features/cart/cart";
 
 export default function ProductDetailCard({ data }) {
-  // ✅ Determine main image
-  const mainImageUrl =
-    data.images.find(img => img.isMain)?.url || // pick main image if exists
-    data.images[0]?.url || // fallback: first image
-    "/placeholder.png"; // fallback placeholder
+  if (!data) return null;
 
-  // ✅ Preview images (all images except main)
-  const previewImages = data.images.filter(img => img.url !== mainImageUrl);
+  const [addToCart] = useAddToCartMutation();
 
-  // ✅ State
-  const [previewImage, setPreviewImage] = useState(mainImageUrl);
+  const images = data.images || [];
+  const mainImage = images.find((img) => img.isMain)?.url || images[0]?.url || "/placeholder.png";
+  const [previewImage, setPreviewImage] = useState(mainImage);
+
+  const variants = data.variants || [];
+  const variantTypes = variants[0]?.typeValues ? Object.keys(variants[0].typeValues) : [];
+
+  // ✅ Set default variant to first variant available
+  const [selectedVariant, setSelectedVariant] = useState(
+    variants[0]?.typeValues || {}
+  );
+
+  const [price, setPrice] = useState(variants[0]?.price || 0);
+  const [stock, setStock] = useState(variants[0]?.stock || 0);
   const [quantity, setQuantity] = useState(1);
 
-  const [addToCart, { isLoading, isSuccess, isError }] = useAddToCartMutation();
+  // Update price and stock when selected variant changes
+  useEffect(() => {
+    if (!variants.length) return;
 
-  // ✅ Add to cart handler
-  const handleAddToCart = async () => {
+    const matched = variants.find((v) => {
+      const values = v.typeValues || {};
+      return Object.entries(selectedVariant).every(([key, val]) => values[key] === val);
+    });
+
+    if (matched) {
+      setPrice(matched.price);
+      setStock(matched.stock);
+    } else {
+      setPrice(0);
+      setStock(0);
+    }
+  }, [selectedVariant, variants]);
+
+  const handleAddToCart = async (e) => {
+    e.preventDefault();
     try {
-      await addToCart({ productId: data?._id, quantity }).unwrap();
-      alert("✅ Product added to cart!");
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      alert("❌ Failed to add to cart");
+      await addToCart({
+        productId: data._id,
+        quantity,
+        variants: selectedVariant, // send the selected variant
+        price, // send price for this variant
+      }).unwrap();
+      alert("✅ Product added to cart");
+    } catch (err) {
+      console.error(err);
+      alert("❌ Error adding product to cart");
     }
   };
 
   return (
-    <div className="grid w-full md:grid-cols-[2fr_2fr] sm:grid-cols-1 gap-4">
-      {/* 🖼️ Image Section */}
-      <div className="shadow-lg border rounded-xl overflow-hidden p-4 bg-white">
-        <div className="relative">
+    <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8 grid md:grid-cols-[420px_1fr] grid-cols-1 gap-6 lg:gap-10 bg-white rounded-3xl shadow-xl border border-gray-100">
+      {/* Image Section */}
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="relative w-full rounded-3xl overflow-hidden bg-gray-100 shadow-inner">
           <img
             src={previewImage}
-            alt={data?.title || "Product image"}
-            className="w-full max-h-96 object-contain rounded-lg"
+            alt={data.title}
+            className="w-full h-[300px] sm:h-[420px] md:h-[480px] lg:h-[500px] object-contain transform hover:scale-105 transition-transform duration-500"
           />
-          <p className="text-center text-sm text-gray-500 mt-2">
-            Click an image below to view full preview
-          </p>
         </div>
 
-        {/* 🔳 Thumbnails */}
-        <div className="grid grid-cols-4 gap-3 mt-4">
-          {/* Main image thumbnail */}
-          <div
-            onClick={() => setPreviewImage(mainImageUrl)}
-            className="border rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer"
-          >
-            <img
-              src={mainImageUrl}
-              alt="Main Thumbnail"
-              className="h-24 object-cover w-full"
-            />
-          </div>
-
-          {/* Preview thumbnails */}
-          {previewImages.map((img, index) => (
-            <div
-              key={index}
+        {/* Thumbnails */}
+        <div className="flex gap-2 sm:gap-3 overflow-x-auto p-1 scrollbar-none">
+          {images.map((img, idx) => (
+            <button
+              key={idx}
               onClick={() => setPreviewImage(img.url)}
-              className="border rounded-lg overflow-hidden hover:scale-105 transition-transform duration-300 cursor-pointer"
+              className={`flex-shrink-0 rounded-lg border-2 p-1 transition-all duration-300 ${
+                previewImage === img.url
+                  ? "border-green-500 scale-105 shadow-md"
+                  : "border-transparent hover:border-gray-300"
+              }`}
             >
               <img
                 src={img.url}
-                alt={`Thumbnail ${index}`}
-                className="h-24 object-cover w-full"
+                alt={`Thumbnail ${idx}`}
+                className="h-16 w-16 sm:h-20 sm:w-20 object-cover rounded-lg"
               />
-            </div>
+            </button>
           ))}
         </div>
       </div>
 
-      {/* 📦 Product Info */}
-      <div className="flex flex-col justify-center gap-4 p-6">
-        <p className="text-2xl font-bold text-gray-800">{data?.title}</p>
-        <h3 className="text-lg font-semibold text-gray-700">Product Details</h3>
+      {/* Product Info Section */}
+      <div className="flex flex-col justify-between gap-4 sm:gap-6">
+        <div>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-2">
+            {data.title}
+          </h1>
 
-        {/* Description */}
-        {Array.isArray(data?.description) ? (
-          <ul className="list-disc list-inside text-gray-600 space-y-1">
-            {data.description.map((desc, idx) => (
-              <li key={idx}>{desc}</li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-600">{data?.description}</p>
-        )}
+          <p className="text-xl sm:text-2xl lg:text-3xl font-semibold text-green-600">
+            ₹{price.toFixed(2)}
+          </p>
 
-        {/* Quantity controls */}
-        <div className="flex items-center gap-2 mt-3">
-          <button
-            className="px-3 py-1 bg-gray-200 rounded"
-            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-          >
-            -
-          </button>
-          <span className="text-lg font-semibold">{quantity}</span>
-          <button
-            className="px-3 py-1 bg-gray-200 rounded"
-            onClick={() => setQuantity((q) => q + 1)}
-          >
-            +
-          </button>
+          <p className={`font-medium mt-1 flex items-center gap-2 ${stock > 0 ? "text-green-600" : "text-red-600"}`}>
+            {stock > 0 ? (
+              <>
+                <CheckCircle2 size={18} /> In Stock: {stock}
+              </>
+            ) : (
+              <>
+                <XCircle size={18} /> Out of Stock
+              </>
+            )}
+          </p>
+
+          {/* Category */}
+          {data.category?.main && (
+            <p className="text-gray-700 mt-2 text-sm sm:text-base">
+              <span className="font-medium">Category:</span> {data.category.main}
+              {data.category.sub && ` > ${data.category.sub}`}{" "}
+              {data.category.gender && `(${data.category.gender})`}
+            </p>
+          )}
+
+          {/* Description */}
+          {data.description && (
+            <div className="mt-4 sm:mt-5">
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Description</h2>
+              <p className="text-gray-600 leading-relaxed">{data.description}</p>
+            </div>
+          )}
+
+          {/* Variants */}
+          {variantTypes.length > 0 && (
+            <div className="mt-4 sm:mt-6 space-y-3">
+              {variantTypes.map((type) => {
+                const options = [...new Set(variants.map(v => v.typeValues?.[type] ?? ""))].filter(Boolean);
+                return (
+                  <div key={type}>
+                    <label className="font-medium text-gray-700">{type}:</label>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {options.map((opt) => (
+                        <button
+                          key={opt}
+                          onClick={() => setSelectedVariant(prev => ({ ...prev, [type]: opt }))}
+                          className={`px-3 py-1 sm:px-4 sm:py-2 rounded-full text-sm sm:text-base font-medium transition-all ${
+                            selectedVariant[type] === opt
+                              ? "bg-green-600 text-white shadow-md scale-105"
+                              : "bg-gray-100 hover:bg-gray-200"
+                          }`}
+                        >
+                          {opt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        <button
-          disabled={isLoading}
-          onClick={handleAddToCart}
-          className="bg-green-500 text-white font-semibold rounded-md h-10 w-40 shadow-md hover:scale-105 transition-all duration-200"
-        >
-          {isLoading ? "Adding..." : "Add to Cart"}
-        </button>
+        {/* Quantity & Add to Cart */}
+        <div className="flex flex-col gap-3 sm:gap-4 mt-4 sm:mt-6 border-t pt-3">
+          <div className="flex items-center gap-4">
+            <button onClick={() => setQuantity(q => Math.max(1, q - 1))} className="border border-gray-300 rounded-full p-2 hover:bg-gray-100 transition">
+              <Minus size={18} />
+            </button>
+            <span className="text-lg sm:text-xl font-semibold w-8 text-center">{quantity}</span>
+            <button onClick={() => setQuantity(q => q + 1)} className="border border-gray-300 rounded-full p-2 hover:bg-gray-100 transition">
+              <Plus size={18} />
+            </button>
+          </div>
 
-        {isSuccess && <p className="text-green-600">Added successfully!</p>}
-        {isError && <p className="text-red-600">Error adding to cart.</p>}
+          <button
+            onClick={handleAddToCart}
+            disabled={stock <= 0}
+            className="btn btn-success gap-2 w-fit disabled:opacity-50 mt-2 sm:mt-3"
+          >
+            <ShoppingCart size={20} /> {stock <= 0 ? "Out of Stock" : "Add to Cart"}
+          </button>
+        </div>
       </div>
     </div>
   );

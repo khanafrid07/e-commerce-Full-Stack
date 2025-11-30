@@ -23,13 +23,13 @@ const orderSchema = new mongoose.Schema({
         enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
         default: "Pending",
       },
+      variants: {type: Object},
       cancelReason: String,
       cancelledAt: Date,
       createdAt: { type: Date, default: Date.now },
     },
   ],
 
-  // 🟦 ADD THIS
   status: {
     type: String,
     enum: ["Pending", "Shipped", "Delivered", "Cancelled"],

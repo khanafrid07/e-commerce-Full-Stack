@@ -28,7 +28,7 @@ router.get("/:id", async (req, res) => {
 router.post("/", verifyToken, upload.array("images", 5), async (req, res) => {
   try {
     const { title, description, basePrice, stock, category, variants } = req.body;
-console.log(variants)
+    console.log(variants)
     // Parse JSON fields
     const parsedCategory = JSON.parse(category);
     const parsedVariants = JSON.parse(variants);
@@ -56,7 +56,7 @@ console.log(variants)
       stock,
       category: parsedCategory,
       variants: parsedVariants,
-   
+      featured: false,
       images: imageUrls
     });
 
@@ -80,17 +80,21 @@ router.put("/:id", verifyToken, upload.array("images", 5), async (req, res) => {
       stock,
       category,
       variants,
-      existingImages
+      existingImages,
+      featured
     } = req.body;
+    console.log(featured)
 
     const product = await Product.findById(req.params.id);
     if (!product)
       return res.status(404).json({ message: "Product not found" });
 
     // Parse JSON fields safely
+    const parsedFeatured = featured === "true" || featured === true;
     const parsedCategory = category ? JSON.parse(category) : {};
     const parsedVariants = variants ? JSON.parse(variants) : [];
     const parsedExistingImages = existingImages ? JSON.parse(existingImages) : [];
+
 
     // Update basic fields
     product.title = title || product.title;
@@ -99,6 +103,7 @@ router.put("/:id", verifyToken, upload.array("images", 5), async (req, res) => {
     product.stock = Number(stock) || 0;
     product.category = parsedCategory;
     product.variants = parsedVariants;
+    product.featured = parsedFeatured
 
     // Handle new uploaded images
     const newImages = (req.files || []).map(file => ({
