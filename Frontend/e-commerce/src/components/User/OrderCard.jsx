@@ -10,7 +10,7 @@ export default function OrderCard({ order, activeTab }) {
     if (activeTab === "Arrived") return p.status === "Delivered";
     if (activeTab === "Cancelled") return p.status === "Cancelled";
   });
-
+console.log(order)
   return (
     <div className="w-[95%] sm:w-[80%] mx-auto bg-white rounded-2xl shadow-md p-6 space-y-6 border border-gray-100">
      

@@ -106,3 +106,5 @@ async function addData() {
     console.error("Error inserting data:", err);
   }
 }
+
+
