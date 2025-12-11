@@ -1,9 +1,12 @@
 const mongoose = require("mongoose");
 
 const variantSchema = new mongoose.Schema({
-  typeValues: { type: Object, required: true }, // { Size: "M" }
+  typeValues: { type: Object, required: true },
   stock: { type: Number, default: 0 },
   price: { type: Number, default: 0 },
+  images: [{ url: String, fileName: String }],
+  thumbnailIndex: { type: Number, default: 0 },
+  discount: { type: Number, default: 0 }
 });
 
 
@@ -39,24 +42,24 @@ const productSchema = new mongoose.Schema(
 
     images: [
       {
-        url: {type: String, required: true},
-        isMain: {type: Boolean, default:false},
+        url: { type: String, required: true },
+        isMain: { type: Boolean, default: false },
         fileName: String
       }
     ],
 
     variants: [variantSchema],
 
-    details: [{
-      type: Object,
-      default: {},
-    }],
-
+    baseVariant: {
+      typeValues: { type: Object, required: true },
+      price: Number,
+      stock: Number
+    },
     isActive: {
       type: Boolean,
       default: true,
     },
-    featured:{type: Boolean, default: false}
+    featured: { type: Boolean, default: false }
   },
   { timestamps: true }
 );

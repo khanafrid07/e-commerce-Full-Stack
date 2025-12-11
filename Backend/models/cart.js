@@ -21,14 +21,21 @@ const cartSchema = new mongoose.Schema(
           default: 1,
         },
         price: {
-          type: Number, 
+          type: Number,
           required: true,
         },
-        variant: {
-          type: Object,
+        variantId: {
+          type: String,
+          default: null
+        },
 
+        variantType: {
+          type: String,
+          enum: ["base", "variant"],
+          required: true,
+          default: "variant"
         }
-       
+
       },
     ],
     totalPrice: {

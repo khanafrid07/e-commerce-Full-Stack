@@ -3,10 +3,6 @@ const Cart = require("../models/cart");
 const Product = require("../models/product");
 const verifyToken = require("../middlewares/verifyUser");
 const router = express.Router();
-
-/* ------------------------------------------------------ */
-/*                   GET USER CART                        */
-/* ------------------------------------------------------ */
 router.get("/", verifyToken, async (req, res) => {
   try {
     const cart = await Cart.findOne({ user: req.userId })
@@ -20,15 +16,18 @@ router.get("/", verifyToken, async (req, res) => {
   }
 });
 
-/* ------------------------------------------------------ */
-/*                 ADD ITEM TO CART                       */
-/* ------------------------------------------------------ */
+
 router.post("/add", verifyToken, async (req, res) => {
   try {
-    const { productId, quantity = 1, variant = {} } = req.body;
+    const { productId, quantity = 1, variants = {}, price } = req.body;
 
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ message: "Product not found" });
+
+    
+    if (!price || price <= 0) {
+      return res.status(400).json({ message: "Invalid price" });
+    }
 
     let cart = await Cart.findOne({ user: req.userId });
 
@@ -40,49 +39,29 @@ router.post("/add", verifyToken, async (req, res) => {
       });
     }
 
-    // Check if same product + variant exists
+    
     const existingItem = cart.items.find((item) => {
       if (item.product.toString() !== productId) return false;
-      
-      return JSON.stringify(item.variant || {}) === JSON.stringify(variant || {});
+      return JSON.stringify(item.variant || {}) === JSON.stringify(variants || {});
     });
 
     if (existingItem) {
       existingItem.quantity += quantity;
     } else {
-      cart.items.push({ product: productId, quantity, variant });
+      cart.items.push({ 
+        product: productId, 
+        quantity, 
+        variant: variants,
+        price: price
+      });
     }
 
-    // Recalculate total
-    let total = 0;
-    for (const item of cart.items) {
-      const itemProduct = await Product.findById(item.product);
-      if (!itemProduct) continue;
-
-      let price = itemProduct.basePrice || 0;
-
-      if (item.variant && Object.keys(item.variant).length > 0) {
-        const matchedVariant = (itemProduct.variants || []).find((v) => {
-          const vObj =
-            v.typeValues instanceof Map
-              ? Object.fromEntries(v.typeValues)
-              : v.typeValues;
-
-          return Object.entries(item.variant).every(
-            ([key, val]) => vObj[key] === val
-          );
-        });
-
-        if (matchedVariant) price = matchedVariant.price;
-      }
-
-      item.price = price;
-      total += price * item.quantity;
-    }
-
-    cart.totalPrice = total;
+  
+    cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
     await cart.save();
+    await cart.populate("items.product");
+    
     res.status(201).json(cart);
 
   } catch (err) {
@@ -91,21 +70,16 @@ router.post("/add", verifyToken, async (req, res) => {
   }
 });
 
-/* ------------------------------------------------------ */
-/*                UPDATE ITEM QUANTITY                    */
-/* ------------------------------------------------------ */
+
 router.put("/update/:id", verifyToken, async (req, res) => {
   try {
     const { quantity, variant = {} } = req.body;
 
-    if (!quantity || quantity < 1)
-      return res
-        .status(400)
-        .json({ message: "Quantity must be at least 1" });
+    if (!quantity || quantity < 1) {
+      return res.status(400).json({ message: "Quantity must be at least 1" });
+    }
 
-    const cart = await Cart.findOne({ user: req.userId })
-      .populate("items.product");
-
+    const cart = await Cart.findOne({ user: req.userId }).populate("items.product");
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
     const item = cart.items.find(
@@ -120,33 +94,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     item.quantity = quantity;
 
     // Recalculate total
-    let total = 0;
-    for (const i of cart.items) {
-      const p = await Product.findById(i.product);
-      if (!p) continue;
-
-      let price = p.basePrice || 0;
-
-      if (i.variant && Object.keys(i.variant).length > 0) {
-        const matchedVariant = (p.variants || []).find((v) => {
-          const vObj =
-            v.typeValues instanceof Map
-              ? Object.fromEntries(v.typeValues)
-              : v.typeValues;
-
-          return Object.entries(i.variant).every(
-            ([k, val]) => vObj[k] === val
-          );
-        });
-
-        if (matchedVariant) price = matchedVariant.price;
-      }
-
-      i.price = price;
-      total += price * i.quantity;
-    }
-
-    cart.totalPrice = total;
+    cart.totalPrice = cart.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
 
     await cart.save();
     res.json({ updatedItem: item, totalPrice: cart.totalPrice });
@@ -157,9 +105,7 @@ router.put("/update/:id", verifyToken, async (req, res) => {
   }
 });
 
-/* ------------------------------------------------------ */
-/*                REMOVE ITEM (variant-safe)              */
-/* ------------------------------------------------------ */
+
 router.delete("/remove/:id", verifyToken, async (req, res) => {
   try {
     const { id } = req.params;
@@ -168,59 +114,17 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
     const cart = await Cart.findOne({ user: req.userId }).populate("items.product");
     if (!cart) return res.status(404).json({ message: "Cart not found" });
 
-    // Match product + variant
-    const targetItem = cart.items.find((item) => {
-      if (!item.product) return false;
-
-      const sameProduct = item.product._id.toString() === id;
-      const sameVariant =
-        JSON.stringify(item.variant || {}) === JSON.stringify(variant || {});
-
-      return sameProduct && sameVariant;
-    });
-
-    if (!targetItem)
-      return res.status(404).json({ message: "Item not found in cart" });
-
-    // Remove only the matched product+variant
+    
     cart.items = cart.items.filter((item) => {
       if (!item.product) return true;
-
       const sameProduct = item.product._id.toString() === id;
-      const sameVariant =
-        JSON.stringify(item.variant || {}) === JSON.stringify(variant || {});
-
+      const sameVariant = JSON.stringify(item.variant || {}) === JSON.stringify(variant || {});
       return !(sameProduct && sameVariant);
     });
 
-    // Recalculate total
-    let total = 0;
+    
+    cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
-    for (const item of cart.items) {
-      const p = await Product.findById(item.product);
-      if (!p) continue;
-
-      let price = p.basePrice || 0;
-
-      if (item.variant && Object.keys(item.variant).length > 0) {
-        const matchedVariant = (p.variants || []).find((v) => {
-          const vObj =
-            v.typeValues instanceof Map
-              ? Object.fromEntries(v.typeValues)
-              : v.typeValues;
-
-          return Object.entries(item.variant).every(
-            ([k, val]) => vObj[k] === val
-          );
-        });
-
-        if (matchedVariant) price = matchedVariant.price;
-      }
-
-      total += price * item.quantity;
-    }
-
-    cart.totalPrice = total;
     await cart.save();
 
     res.json({ message: "Item removed successfully", cart });
@@ -231,9 +135,7 @@ router.delete("/remove/:id", verifyToken, async (req, res) => {
   }
 });
 
-/* ------------------------------------------------------ */
-/*                   CLEAR CART                           */
-/* ------------------------------------------------------ */
+
 router.delete("/clear", verifyToken, async (req, res) => {
   try {
     await Cart.findOneAndDelete({ user: req.userId });

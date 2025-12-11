@@ -12,43 +12,42 @@ export const cartApi = createApi({
   }),
   tagTypes: ["Cart"],
   endpoints: (builder) => ({
-    // 🛒 Get user cart
+
+   
     getCart: builder.query({
       query: () => "/",
       providesTags: ["Cart"],
     }),
 
-    // ➕ Add product to cart (with variant support)
     addToCart: builder.mutation({
-      query: ({ productId, quantity, variant }) => ({
+      query: ({ productId, quantity, selectedVariant, price }) => ({
         url: "/add",
         method: "POST",
-        body: { productId, quantity, variant },
+        body: { productId, quantity, selectedVariant, price },
       }),
       invalidatesTags: ["Cart"],
     }),
 
-    // 🔄 Update quantity (with variant support)
+    
     updateCartItem: builder.mutation({
-      query: ({ id, quantity, variant }) => ({
+      query: ({ id, quantity, selectedVariant }) => ({
         url: `/update/${id}`,
         method: "PUT",
-        body: { quantity, variant },
+        body: { quantity, selectedVariant },
       }),
       invalidatesTags: ["Cart"],
     }),
 
-    // 🗑️ Remove a single item (with variant support)
+ 
     removeCartItem: builder.mutation({
-      query: ({ id, variant }) => ({
+      query: ({ id, selectedVariant }) => ({
         url: `/remove/${id}`,
         method: "DELETE",
-        body: { variant }, // pass variant for correct deletion
+        body: { selectedVariant },
       }),
       invalidatesTags: ["Cart"],
     }),
 
-    // 🧹 Clear entire cart
     clearCart: builder.mutation({
       query: () => ({
         url: "/clear",

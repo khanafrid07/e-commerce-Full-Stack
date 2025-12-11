@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useViewProductQuery, useDeleteProductMutation } from "./productSlice";
 import { useState } from "react";
 import UpdateProduct from "./UpdateProduct";
-import ProductDetailCard from "../../components/ProductDetailCard";
+import ProductDetailCard from "../../components/product/ProductDetailCard";
 
 export default function ProductDetail() {
   const { id } = useParams(); 

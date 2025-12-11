@@ -25,104 +25,147 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ message: "Error fetching product", error: err.message }); 8
   }
 });
-router.post("/", verifyToken, upload.array("images", 5), async (req, res) => {
+router.post("/", upload.any(), async (req, res) => {
   try {
-    const { title, description, basePrice, stock, category, variants } = req.body;
-    console.log(variants)
-    // Parse JSON fields
-    const parsedCategory = JSON.parse(category);
-    const parsedVariants = JSON.parse(variants);
+    const parsedCategory = JSON.parse(req.body.category);
+    const parsedVariants = JSON.parse(req.body.variants);
+    const parsedBaseVariant = JSON.parse(req.body.baseVariant);
 
+    // MAIN PRODUCT IMAGES (These are Base Variant images)
+    const mainImages = req.files
+      .filter(f => f.fieldname === "images")
+      .map((file, index) => ({
+        url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+        fileName: file.originalname,
+        isMain: index === 0,
+      }));
 
-    // Files from multer
-    const images = req.files; // <-- This will NOT be undefined now
+    // ADDITIONAL VARIANT IMAGES ONLY
+    parsedVariants.forEach((variant, i) => {
+      const variantFiles = req.files.filter(
+        f => f.fieldname === `variantImages_${i}`
+      );
 
-    if (!images || images.length === 0) {
-      return res.status(400).json({ message: "No images uploaded" });
-    }
+      variant.images = variantFiles.map((file) => ({
+        url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+        fileName: file.originalname
+      }));
 
-    // Build image URLs
-    const imageUrls = images.map((file, index) => ({
-      url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
-      isMain: index === 0,
-      fileName: `${file.fieldname}${index}`
-    }));
+      if (!variant.typeValues) {
+        throw new Error("typeValues missing for a variant");
+      }
+    });
 
-    // Save product
     const newProduct = new Product({
-      title,
-      description,
-      basePrice,
-      stock,
+      title: req.body.title,
+      description: req.body.description,
+      basePrice: req.body.basePrice,
+      stock: req.body.stock,
+      discount: req.body.discount || 0,
       category: parsedCategory,
+      images: mainImages,
       variants: parsedVariants,
-      featured: false,
-      images: imageUrls
+      baseVariant: parsedBaseVariant,
+      featured: req.body.featured === "true" || req.body.featured === true
     });
 
     await newProduct.save();
 
-    res.status(201).json({ message: "Product added successfully", product: newProduct });
-
+    res.json({ success: true, product: newProduct });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Error adding product" });
+    console.error("Add product error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 
-// ---------------- UPDATE product ----------------
-router.put("/:id", verifyToken, upload.array("images", 5), async (req, res) => {
+
+// ============================================
+// UPDATE PRODUCT ROUTE - ⚠️ NEEDS FIXES
+// ============================================
+router.put("/:id", verifyToken, upload.any(), async (req, res) => {
   try {
     const {
       title,
       description,
       basePrice,
       stock,
+      discount,
       category,
       variants,
       existingImages,
-      featured
+      featured,
+      baseVariant,
     } = req.body;
-    console.log(featured)
 
     const product = await Product.findById(req.params.id);
-    if (!product)
-      return res.status(404).json({ message: "Product not found" });
+    if (!product) return res.status(404).json({ message: "Product not found" });
 
-    // Parse JSON fields safely
-    const parsedFeatured = featured === "true" || featured === true;
-    const parsedCategory = category ? JSON.parse(category) : {};
-    const parsedVariants = variants ? JSON.parse(variants) : [];
+    // Parse JSON fields
+    const parsedCategory = category ? JSON.parse(category) : product.category || {};
+    const parsedVariants = variants ? JSON.parse(variants) : product.variants || [];
     const parsedExistingImages = existingImages ? JSON.parse(existingImages) : [];
-
+    const parsedBaseVariant = baseVariant
+      ? JSON.parse(baseVariant)
+      : product.baseVariant || { typeValues: {}, price: 0, stock: 0 };
+    const parsedFeatured = featured === "true" || featured === true;
 
     // Update basic fields
-    product.title = title || product.title;
-    product.description = description || product.description;
-    product.basePrice = Number(basePrice) || 0;
-    product.stock = Number(stock) || 0;
+    product.title = title ?? product.title;
+    product.description = description ?? product.description;
+    product.basePrice = Number(basePrice) || product.basePrice;
+    product.stock = Number(stock) || product.stock;
+    product.discount = Number(discount) || 0;
     product.category = parsedCategory;
+    product.baseVariant = parsedBaseVariant;
+    product.featured = parsedFeatured;
+
+    // ============================================
+    // HANDLE MAIN PRODUCT IMAGES
+    // ============================================
+    const newMainImages = req.files
+      .filter(f => f.fieldname === "images")
+      .map((file) => ({
+        url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+        isMain: false,
+        fileName: file.originalname,
+      }));
+
+    // Merge existing + new images
+    let mergedImages = [...parsedExistingImages, ...newMainImages].slice(0, 5);
+
+    // Ensure at least one main image
+    if (!mergedImages.some((img) => img.isMain) && mergedImages.length) {
+      mergedImages[0].isMain = true;
+    }
+
+    product.images = mergedImages;
+
+    // ============================================
+    // HANDLE VARIANT IMAGES
+    // ============================================
+    parsedVariants.forEach((variant, i) => {
+      // Get new files for this variant
+      const newVariantFiles = req.files.filter(
+        f => f.fieldname === `variantImages_${i}`
+      );
+
+      // Convert new files to image objects
+      const newVariantImages = newVariantFiles.map((file) => ({
+        url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
+        fileName: file.originalname
+      }));
+
+      // Merge existing variant images + new ones
+      const existingVariantImages = variant.images || [];
+      variant.images = [...existingVariantImages, ...newVariantImages].slice(0, 5);
+    });
+
     product.variants = parsedVariants;
-    product.featured = parsedFeatured
-
-    // Handle new uploaded images
-    const newImages = (req.files || []).map(file => ({
-      url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
-      isMain: false,
-      fileName: file.filename,
-    }));
-
-    // Merge new and existing images safely
-    let images = [...parsedExistingImages, ...newImages].slice(0, 5);
-
-    // Ensure one main image
-    if (!images.some(img => img.isMain) && images.length) images[0].isMain = true;
-
-    product.images = images;
 
     await product.save();
 
     res.json({ message: "Product updated successfully", product });
+
   } catch (err) {
     console.error("Update product error:", err);
     res.status(500).json({
