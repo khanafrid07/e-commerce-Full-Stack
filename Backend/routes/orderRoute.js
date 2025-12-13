@@ -34,65 +34,28 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// ✅ Create new order
+
 router.post("/", verifyUser, async (req, res) => {
   try {
     const { products, paymentMethod, totalPrice, shippingAddress } = req.body;
-
-    if (!products || !products.length || !totalPrice) {
-      return res.status(400).json({ message: "Products and total price are required" });
+    console.log(products)
+    if (!products || products.length === 0) {
+      return res.status(400).json({ message: "No products supplied" });
     }
+    const newOrder = new Order({ products: products, paymentMethod, totalPrice, shippingAddress, user: req.userId })
+    await newOrder.save()
+    console.log(newOrder)
 
-    const orderProducts = [];
+    res.status(201).json({ msg: "ORder creatd successfully", newOrder });
 
-    for (const item of products) {
-      const product = await Product.findById(item.product);
-      if (!product) continue;
-
-      let price = item.price || product.basePrice || 0;
-
-      // Handle variants
-      if (item.variants && Object.keys(item.variants).length > 0) {
-        const variantObj = product.variants.find(v => {
-          const vMap = v.typeValues instanceof Map ? Object.fromEntries(v.typeValues) : v.typeValues;
-          return Object.entries(item.variants).every(([k, val]) => vMap[k] === val);
-        });
-        if (variantObj) {
-          variantObj.stock = Math.max(0, variantObj.stock - item.quantity);
-          price = variantObj.price;
-        }
-      } else {
-        product.stock = Math.max(0, product.stock - item.quantity);
-      }
-
-      await product.save();
-
-      orderProducts.push({
-        product: item.product,
-        quantity: item.quantity,
-        price,
-        variants: item.variants || {},
-        status: "Pending"
-      });
-    }
-
-    const newOrder = new Order({
-      products: orderProducts,
-      paymentMethod,
-      totalPrice,
-      shippingAddress,
-      status: "Pending",
-      user: req.userId
-    });
-
-    const savedOrder = await newOrder.save();
-    res.status(201).json({ message: "Order placed successfully", order: savedOrder });
   } catch (err) {
-    res.status(500).json({ message: "Error creating order", error: err.message });
+    console.log(err)
+    res.status(500).json({ message: "FAiled to create Order", message: err })
   }
+
 });
 
-// ✅ Cancel single product in an order
+
 router.put("/cancel-product/:orderId/:productId", async (req, res) => {
   try {
     const { orderId, productId } = req.params;
@@ -100,7 +63,7 @@ router.put("/cancel-product/:orderId/:productId", async (req, res) => {
     const order = await Order.findById(orderId).populate("products.product");
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    const productItem = order.products.find(p => p.product._id.toString() === productId);
+    const productItem = order.products.find(p => p._id.toString() === productId);
     if (!productItem) return res.status(404).json({ message: "Product not found in order" });
 
     if (productItem.status === "Cancelled") {
@@ -145,7 +108,7 @@ router.put("/:orderId/:productId", async (req, res) => {
     const order = await Order.findById(orderId).populate("products.product");
     if (!order) return res.status(404).json({ message: "Order not found" });
 
-    const productItem = order.products.find(p => p.product._id.toString() === productId);
+    const productItem = order.products.find(p => p._id.toString() === productId);
     if (!productItem) return res.status(404).json({ message: "Product not found in order" });
 
     productItem.status = status;

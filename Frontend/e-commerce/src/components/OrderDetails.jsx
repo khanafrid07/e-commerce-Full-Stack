@@ -145,7 +145,7 @@ export default function OrderDetails() {
                 <select
                   value={p.status}
                   onChange={(e) =>
-                    handleItemStatus(p.product._id, e.target.value)
+                    handleItemStatus(p._id, e.target.value)
                   }
                   className="select select-bordered select-xs w-[110px]" // fixed width
                 >

@@ -58,6 +58,19 @@ export default function Cart() {
     });
   };
 
+  // Get the correct image for this variant
+  const getItemImage = (item) => {
+    // First try variantImages (stored in cart)
+    if (item.variantImages?.length > 0) {
+      return item.variantImages[0].url;
+    }
+
+    // Fallback to product main image
+    return item.product.images?.find((i) => i.isMain)?.url || 
+           item.product.images?.[0]?.url || 
+           "/placeholder.png";
+  };
+
   if (isLoading)
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -96,11 +109,7 @@ export default function Cart() {
                   {/* Product Image */}
                   <div className="w-full sm:w-32 h-32 bg-base-200 rounded-xl overflow-hidden flex-shrink-0">
                     <img
-                      src={
-                        item.product.images?.find((i) => i.isMain)?.url ||
-                        item.product.images?.[0]?.url ||
-                        "/placeholder.png"
-                      }
+                      src={getItemImage(item)}
                       alt={item.product.title}
                       className="w-full h-full object-cover"
                     />
@@ -110,13 +119,18 @@ export default function Cart() {
                   <div className="flex-1 space-y-2">
                     <h2 className="text-lg font-bold">{item.product.title}</h2>
 
-                    {/* Selected Variant */}
+                    {/* Variant Details */}
                     {item.variant && Object.keys(item.variant).length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {Object.entries(item.variant).map(([k, v]) => (
-                          <span key={k} className="badge badge-outline badge-sm">
-                            {k}: {v}
-                          </span>
+                      <div className="space-y-1">
+                        {Object.entries(item.variant).map(([key, value]) => (
+                          <div key={key} className="flex items-center gap-2">
+                            <span className="text-xs font-semibold text-base-content/60 uppercase">
+                              {key}:
+                            </span>
+                            <span className="badge badge-outline badge-sm">
+                              {value}
+                            </span>
+                          </div>
                         ))}
                       </div>
                     )}

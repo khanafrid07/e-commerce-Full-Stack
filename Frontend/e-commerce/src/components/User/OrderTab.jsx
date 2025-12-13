@@ -15,6 +15,7 @@ export default function OrderTab({ orders }) {
       return order.products.some((p) => p.status === "Cancelled");
     return false;
   });
+  console.log(filteredOrders)
 
   return (
     <div className="w-[95%] mx-auto my-12">
@@ -36,7 +37,7 @@ export default function OrderTab({ orders }) {
         ))}
       </div>
 
-      {/* Order Cards */}
+      
       <div className="flex flex-col gap-6 w-full">
         {filteredOrders.length > 0 ? (
           filteredOrders.map((order) => (
