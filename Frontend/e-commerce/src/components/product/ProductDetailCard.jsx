@@ -21,11 +21,22 @@ export default function ProductDetailCard({ data }) {
   const variantTypes = baseVariant.typeValues ? Object.keys(baseVariant.typeValues) : [];
 
   // State
-  const [selectedVariant, setSelectedVariant] = useState(baseVariant.typeValues || {});
+  const [selectedVariant, setSelectedVariant] = useState({});
   const [price, setPrice] = useState(baseVariant.price || data.basePrice || 0);
   const [stock, setStock] = useState(baseVariant.stock || data.stock || 0);
   const [discount, setDiscount] = useState(data.discount || 0);
   const [quantity, setQuantity] = useState(1);
+
+  // Initialize selected variant on mount
+  useEffect(() => {
+    if (baseVariant.typeValues) {
+      // Only set if all values are non-empty
+      const hasAllValues = Object.values(baseVariant.typeValues).every(v => v && v !== "" && v !== "None");
+      if (hasAllValues) {
+        setSelectedVariant(baseVariant.typeValues);
+      }
+    }
+  }, []);
 
   // Images
   const productImages = data.images || [];
@@ -52,15 +63,20 @@ export default function ProductDetailCard({ data }) {
 
   // Smart variant selection
   const handleVariantChange = (type, value) => {
+    console.log(`🔄 Changing ${type} to ${value}`);
+    
     const newSelection = { ...selectedVariant, [type]: value };
+    console.log("📝 New selection:", newSelection);
     
     const exists = allVariants.some(v =>
       Object.entries(newSelection).every(([k, val]) => v.typeValues?.[k] === val)
     );
 
     if (exists) {
+      console.log("✅ Exact match found, setting variant");
       setSelectedVariant(newSelection);
     } else {
+      console.log("⚠️ No exact match, adjusting selection");
       const adjustedSelection = { ...newSelection };
       
       variantTypes.forEach(otherType => {
@@ -77,6 +93,7 @@ export default function ProductDetailCard({ data }) {
         }
       });
       
+      console.log("📝 Adjusted selection:", adjustedSelection);
       setSelectedVariant(adjustedSelection);
     }
   };
@@ -128,16 +145,22 @@ export default function ProductDetailCard({ data }) {
       return;
     }
 
+    const cartData = {
+      productId: data._id,
+      quantity,
+      variants: selectedVariant, 
+      price: finalPrice,
+    };
+
+    console.log("🛒 Adding to cart:", cartData);
+
     try {
-      await addToCart({
-        productId: data._id,
-        quantity,
-        variants: selectedVariant,
-        price: finalPrice,
-      }).unwrap();
+      await addToCart(cartData).unwrap();
+      
+      console.log("✅ Successfully added to cart");
       alert("✅ Product added to cart successfully!");
     } catch (err) {
-      console.error(err);
+      console.error("❌ Add to cart error:", err);
       alert("❌ Error adding product to cart");
     }
   };

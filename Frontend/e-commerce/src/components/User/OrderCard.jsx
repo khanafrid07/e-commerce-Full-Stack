@@ -1,6 +1,8 @@
 import { MapPin } from "lucide-react";
 import DeliverySteps from "./DeliverySteps";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { useEffect } from "react";
 
 export default function OrderCard({ order, activeTab }) {
   const navigate = useNavigate();
@@ -10,7 +12,8 @@ export default function OrderCard({ order, activeTab }) {
     if (activeTab === "Arrived") return p.status === "Delivered";
     if (activeTab === "Cancelled") return p.status === "Cancelled";
   });
-console.log(order)
+
+
   return (
     <div className="w-[95%] sm:w-[80%] mx-auto bg-white rounded-2xl shadow-md p-6 space-y-6 border border-gray-100">
      
@@ -50,7 +53,7 @@ console.log(order)
       <div className="space-y-4">
         {filteredProducts.map((p) => (
           <div
-            key={p.product._id}
+            key={p._id}
             className="flex flex-col sm:flex-row items-center sm:items-start gap-4 border rounded-xl p-3 hover:shadow-md transition-shadow"
           >
             <div className="w-20 h-20 border rounded-lg overflow-hidden flex-shrink-0">

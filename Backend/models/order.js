@@ -23,7 +23,11 @@ const orderSchema = new mongoose.Schema({
         enum: ["Pending", "Shipped", "Delivered", "Cancelled"],
         default: "Pending",
       },
-      variants: {type: Object},
+      variant: {
+        typeValue: {type: Object},
+        variantImage: {url: String}
+
+      },
       cancelReason: String,
       cancelledAt: Date,
       createdAt: { type: Date, default: Date.now },

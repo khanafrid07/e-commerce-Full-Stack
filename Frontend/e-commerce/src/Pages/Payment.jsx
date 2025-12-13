@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useGetCartQuery, useClearCartMutation } from "../features/cart/cart";
+import { useGetCartQuery, useClearCartMutation } from "../features/cart/cart.js";
 import { useCreateOrderMutation } from "../features/orders/orderSlice";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -37,12 +37,12 @@ export default function Payment() {
     return;
   }
 
-  // Prepare order items with variant info
+  
   const orderItems = items.map((item) => ({
     product: item.product._id,
     quantity: item.quantity,
     price: item.price,
-    variant: item.variant || {},
+    variant: {typeValue:item.variant, variantImage: {...item.variantImages?.[0]}}
   }));
 
   const orderData = {
@@ -50,7 +50,9 @@ export default function Payment() {
     totalPrice: total,
     paymentMethod,
     shippingAddress: currentAddress,
-  };
+  }; 
+  console.log(orderData)
+  console.log("it", items)
 
   try {
     await createOrder(orderData).unwrap();
