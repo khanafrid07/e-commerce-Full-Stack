@@ -78,7 +78,7 @@ export default function Payment() {
                 <div className="w-20 h-20 flex-shrink-0">
                   <img
                     className="w-full h-full object-cover rounded"
-                    src={item.product.images[0]?.url || "/placeholder.png"}
+                    src={item.variantImages[0]?.url || "/placeholder.png"}
                     alt={item.product.title}
                   />
                 </div>

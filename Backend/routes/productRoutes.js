@@ -6,13 +6,44 @@ const multer = require("multer")
 const upload = require("../config/multer.js")
 router.get("/", async (req, res) => {
   try {
-    let allProducts = await Product.find()
-    return res.status(200).json({ allProducts })
-  } catch (err) {
-    return res.status(500).json({ message: "ERROR FETCHING PRODUCTS", error: err.message })
-  }
+    const {
+      sort,        // trending | newest | priceLow | priceHigh
+      limit = 12,  // default 12 products
+      category     // optional (Beauty, Clothes, etc.)
+    } = req.query;
 
-})
+    console.log(sort)
+    let filter = {};
+    if (category) {
+      filter["category.main"] = category;
+    }
+    if(sort==="featured"){
+      filter.featured=true
+    }
+
+    // 2️⃣ Build sort logic
+    let sortQuery = {};
+    if (sort === "trending") sortQuery = { soldCount: -1 };
+    else if (sort === "newest") sortQuery = { createdAt: -1 };
+    else if (sort === "priceLow") sortQuery = { basePrice: 1 };
+    else if (sort === "priceHigh") sortQuery = { basePrice: -1 };
+   
+
+   
+    const allProducts = await Product.find(filter)
+      .sort(sortQuery)
+      .limit(Number(limit));
+
+    return res.status(200).json({ allProducts });
+
+  } catch (err) {
+    return res.status(500).json({
+      message: "ERROR FETCHING PRODUCTS",
+      error: err.message,
+    });
+  }
+});
+
 
 //fetching single product
 router.get("/:id", async (req, res) => {

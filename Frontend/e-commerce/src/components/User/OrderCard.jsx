@@ -12,36 +12,46 @@ export default function OrderCard({ order, activeTab }) {
     if (activeTab === "Arrived") return p.status === "Delivered";
     if (activeTab === "Cancelled") return p.status === "Cancelled";
   });
+  const getOrderStatus = (products) => {
+    if (products.some(p => p.status === "Cancelled")) return "Cancelled";
+    if (products.every(p => p.status === "Delivered")) return "Delivered";
+    if (products.some(p => p.status === "Shipped")) return "Shipped";
+    return "Pending";
+  };
+
+  const orderStatus = getOrderStatus(order.products);
 
 
   return (
     <div className="w-[95%] sm:w-[80%] mx-auto bg-white rounded-2xl shadow-md p-6 space-y-6 border border-gray-100">
-     
+
       <h3 className="text-lg font-semibold">#Order ID: {order._id}</h3>
 
-      
+
       {activeTab !== "Cancelled" && (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-       
+
           <div className="flex items-center gap-1">
             <MapPin className="w-4 h-4 text-blue-500" />
             <span>{order.from || "Kathmandu, Nepal"}</span>
           </div>
 
-          
+
           <div className="relative flex-1 flex items-center justify-center w-full">
-            
+
             <div className="hidden sm:block absolute inset-y-1/2 left-0 right-0 border-t-2 border-dashed border-gray-300"></div>
 
-           
+
             <div className="block sm:hidden absolute inset-x-1/2 top-0 bottom-0 border-l-2 border-dashed border-gray-300"></div>
 
             <div className="relative z-10">
-              <DeliverySteps activeStatus={activeTab}/>
+              {orderStatus !== "Cancelled" && (
+                <DeliverySteps orderStatus={orderStatus} />
+              )}
             </div>
           </div>
 
-        
+
           <div className="flex items-center gap-1">
             <MapPin className="w-4 h-4 text-green-500" />
             <span>{order.to || "Pokhara, Nepal"}</span>
@@ -49,7 +59,7 @@ export default function OrderCard({ order, activeTab }) {
         </div>
       )}
 
- 
+
       <div className="space-y-4">
         {filteredProducts.map((p) => (
           <div
@@ -73,7 +83,7 @@ export default function OrderCard({ order, activeTab }) {
         ))}
       </div>
 
-     
+
       <div className="flex flex-col sm:flex-row justify-between items-center pt-4 border-t gap-2 sm:gap-0">
         <p className="font-semibold text-lg text-gray-800">
           Total: <span className="text-blue-600">Rs {order.totalPrice?.toLocaleString()}</span>

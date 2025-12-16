@@ -13,7 +13,11 @@ export const ProductApi = createApi({
     
     endpoints: (builder)=>({
         getProducts: builder.query({
-            query: ()=>"/products",
+            query: (params={})=>{
+                const queryString = new URLSearchParams(params).toString()
+                return `/products?${queryString}`
+            },
+            
             providesTags: ["products"]
         }),
         addProduct: builder.mutation({

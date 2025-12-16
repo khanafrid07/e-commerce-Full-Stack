@@ -1,27 +1,40 @@
-import { Container, Truck, PackageOpen, PackageCheck   } from 'lucide-react';
+import { Container, Truck, PackageOpen, PackageCheck } from "lucide-react";
 
-export default function DeliverySteps({activeStatus}) {
+export default function DeliverySteps({ orderStatus }) {
 
-    return (
-        <div>
-            <div>
-                <ul className="steps">
-                    <li className="step step-neutral">
-                        <span className="step-icon bg-gray-300"><Container className='animate-spinSlow'/></span>
-                    </li>
-                    <li className={`step ${activeStatus==="Arrived"?"step-neutral":""}`}>
-                        <span className="step-icon"><Truck/></span>
-                    </li>
-                    
-                    <li className={`step ${activeStatus==="Arrived"?"step-neutral":""}`}>
-                        <span className="step-icon"><PackageOpen/></span>
-                    </li>
-                    <li className={`step ${activeStatus==="Delivered"?"step-neutral":""}`}>
-                        <span className="step-icon"><PackageCheck/></span>
-                    </li>
-                   
-                </ul>
-            </div>
-        </div>
-    )
+  const steps = [
+    { key: "Placed", icon: <Container /> },
+    { key: "Pending", icon: <Truck /> },
+    { key: "Shipped", icon: <PackageOpen /> },
+    { key: "Delivered", icon: <PackageCheck /> },
+  ];
+
+  const statusToIndex = {
+    Pending: 1,
+    Shipped: 2,
+    Delivered: 3,
+  };
+
+  const activeIndex = statusToIndex[orderStatus] ?? 0;
+
+  return (
+    <ul className="steps">
+      {steps.map((step, index) => (
+        <li
+          key={step.key}
+          className={`step ${index === activeIndex ? "step-neutral" : ""}`}
+        >
+          <span
+            className={`step-icon ${
+              index === activeIndex
+                ? "bg-blue-500 text-white scale-110"
+                : "bg-gray-300 text-gray-500"
+            }`}
+          >
+            {step.icon}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
 }

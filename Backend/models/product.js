@@ -49,6 +49,7 @@ const productSchema = new mongoose.Schema(
     ],
 
     variants: [variantSchema],
+    soldCount:{type: Number, default: 0},
 
     baseVariant: {
       typeValues: { type: Object, required: true },
@@ -59,8 +60,10 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    discount:Number,
     featured: { type: Boolean, default: false }
   },
+  
   { timestamps: true }
 );
 
