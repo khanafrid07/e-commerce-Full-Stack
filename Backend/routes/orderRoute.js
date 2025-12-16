@@ -42,8 +42,18 @@ router.post("/", verifyUser, async (req, res) => {
     if (!products || products.length === 0) {
       return res.status(400).json({ message: "No products supplied" });
     }
+     await Promise.all(
+      products.map((item) =>
+        Product.updateOne(
+          { _id: item.product },
+          { $inc: { soldCount: item.quantity, stock:-item.quantity } }
+        )
+      )
+    );
+
     const newOrder = new Order({ products: products, paymentMethod, totalPrice, shippingAddress, user: req.userId })
     await newOrder.save()
+    
     console.log(newOrder)
 
     res.status(201).json({ msg: "ORder creatd successfully", newOrder });

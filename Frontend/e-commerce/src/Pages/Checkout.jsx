@@ -28,6 +28,8 @@ export default function Checkout() {
     isDefault: true,
   });
 
+  console.log("itemsss", items)
+
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -212,7 +214,7 @@ export default function Checkout() {
           )}
         </div>
 
-        {/* Right - Cart Review */}
+       
         <div className="flex flex-col h-[80vh]">
           <h2 className="text-2xl font-semibold mb-4 text-center md:text-left">
             Review Your Cart
@@ -226,7 +228,7 @@ export default function Checkout() {
               >
                 <div className="relative w-20 h-20 flex-shrink-0">
                   <img
-                    src={item.product.images[0]?.url || "/placeholder.png"}
+                    src={item.variantImages[0].url || "/placeholder.png"}
                     alt={item.product.title}
                     className="w-full h-full object-cover rounded-lg border"
                   />
