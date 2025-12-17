@@ -7,9 +7,9 @@ const upload = require("../config/multer.js")
 router.get("/", async (req, res) => {
   try {
     const {
-      sort,        // trending | newest | priceLow | priceHigh
-      limit = 12,  // default 12 products
-      category     // optional (Beauty, Clothes, etc.)
+      sort,       
+      limit = 12,  
+      category    
     } = req.query;
 
     console.log(sort)
@@ -33,6 +33,7 @@ router.get("/", async (req, res) => {
     const allProducts = await Product.find(filter)
       .sort(sortQuery)
       .limit(Number(limit));
+      console.log(allProducts)
 
     return res.status(200).json({ allProducts });
 

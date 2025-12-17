@@ -21,6 +21,7 @@ import ManageProducts from "./features/products/ManageProducts";
 import AdminOrder from "./Pages/AdminOrder";
 import UpdateProduct from "./features/products/UpdateProduct";
 import Home from "./Pages/Home";
+import CategoryFilter from "./components/product/Cateogry/CateogryFilter";
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -35,6 +36,7 @@ function AppContent() {
       <Route element={<UserLayout />}>
         <Route index element={<Home />} />
         <Route path="products/:id" element={<ProductDetail />} />
+        <Route path="category/:category" element={<CategoryFilter />} />
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<Checkout />} />
         <Route path="payment" element={<Payment />} />
