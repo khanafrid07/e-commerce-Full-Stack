@@ -1,14 +1,14 @@
 import { useGetProductsQuery } from "../features/products/productSlice"
 import LandingCard from "./product/LandingCard"
-export default function TrendingProducts() {
+export default function NewArrivals() {
 
-    const {isLoading, isError, data} = useGetProductsQuery({sort:"trending", limit: 8})
+    const {isLoading, isError, data} = useGetProductsQuery({sort:"newest", limit: 8})
     if(isLoading) return <p>LOading....</p>
    const {allProducts} = data
    console.log(data)
 
 
     return (
-        <LandingCard name={"Trending Items"} products={allProducts}/>
+        <LandingCard name={"New Arrivals"} products={allProducts}/>
     )
 }

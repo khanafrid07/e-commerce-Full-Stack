@@ -2,8 +2,9 @@ import Accessories from "../assets/Accessories.png"
 import Beauty from "../assets/Beauty.png"
 import Fashion from "../assets/Fashion.png"
 import Footwear from "../assets/Footwear.png"
-
+import { useNavigate } from "react-router-dom"
 export default function CategorySection() {
+    const navigate = useNavigate()
     const categories = [
         { img: Fashion, label: "Fashion" },
         { img: Beauty, label: "Beauty" },
@@ -28,6 +29,7 @@ export default function CategorySection() {
             >
                 {categories.map((cat, i) => (
                     <div
+                        onClick={()=>navigate(`/category/${cat.label}`)}
                         key={i}
                         className="relative rounded-xl overflow-hidden shadow-md group"
                     >

@@ -9,13 +9,11 @@ export default function FeaturedProduct() {
 
   if (isLoading) return <p className="text-center py-10">Loading...</p>;
   if (isError) return <p className="text-center text-red-500 py-10">Failed to load products.</p>;
-
-  const featuredProducts =
-    data?.allProducts?.filter((product) => product.featured) || [];
+ const {allProducts} = data
 
 
     return (
-      <LandingCard name={"Feautred Items"} products={featuredProducts}/>
+      <LandingCard name={"Feautred Items"} products={allProducts}/>
     )
 
   
