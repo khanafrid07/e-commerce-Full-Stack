@@ -1,7 +1,3 @@
-// ============================================
-// FILE 1: variantConfig.js
-// Location: src/config/variantConfig.js
-// ============================================
 
 export const VARIANT_OPTIONS = {
   Clothes: ["Size", "Color", "Material"],
