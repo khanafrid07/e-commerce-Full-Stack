@@ -12,6 +12,7 @@ export default function ProductForm() {
     description: "",
     category: { main: "", sub: "", gender: "" },
     basePrice: 0,
+    attributes: {skinType:[null]},
     stock: 0,
     discount: 0,
     featured: false,

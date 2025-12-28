@@ -9,7 +9,8 @@ router.get("/", async (req, res) => {
     const {
       sort,       
       limit = 12,  
-      category    
+      category, 
+      type    
     } = req.query;
 
     console.log(sort)

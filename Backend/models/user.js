@@ -6,7 +6,7 @@ let userSchema = new Schema({
     name:{type: String, required: true},
     email:{
         type: String,
-        requried: true
+        required: true
     },
     password: {
         type: String,

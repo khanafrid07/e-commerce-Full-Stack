@@ -39,6 +39,16 @@ const productSchema = new mongoose.Schema(
       sub: { type: String, required: true },
       gender: { type: String, required: true },
     },
+    attributes: {
+      skinConcern:{type:String, enum: ["acne", "dry", "oily", "sensitive", "pigmentation", "anti-aging", "dark-spots"]},
+       skinType: {
+      type: [String],
+      enum: ["oily", "dry", "combination", "normal", "all skin"],
+      default: ["all skin"],
+    },
+      material: String,
+      fit: String
+    },
 
     images: [
       {

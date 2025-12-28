@@ -9,6 +9,11 @@ export default function GeneralInfo({ formData, setFormData }) {
     Accessories: ["Bags", "Belts", "Watches", "Sunglasses"],
     Beauty: ["Skincare", "Makeup", "Fragrance", "Haircare"]
   };
+  const attributes = {
+    Beauty:{skinType:['Dry', "Oily", "Sensitive","All Skin"], skinConcern:["Acne", "Dry skin", "Pigmentation", "Anti-aging", "Dark Spots"]},
+    Clothes: {fit:["Regular", "Straight", "Relaxed", "Oversized"], material: ["Fabric", "Cotton", "Woolen"]},
+    Footwear: {Size: ['38', '40','42', '44', '46']}
+  }
 
   const handleCategoryChange = (main) => {
     setFormData(prev => ({
@@ -51,6 +56,13 @@ export default function GeneralInfo({ formData, setFormData }) {
       }
     }));
   };
+  const  handleAttributeChange = (value)=>{
+    setFormData(prev=>({
+      ...prev,
+      attributes:{skinType:[...prev.attributes.skinType, value]}
+    }))
+
+  }
 
   const selectedCategory = formData?.category?.main;
 
@@ -137,13 +149,24 @@ export default function GeneralInfo({ formData, setFormData }) {
                 {formData.category?.main ? "Select Sub Category" : "Select main category first"}
               </option>
               {formData.category?.main &&
-                subCategories[formData.category.main]?.map((sub, i) => 
+                subCategories[formData.category.main]?.map((sub, i) =>
                   <option key={i} value={sub}>{sub}</option>
                 )
               }
             </select>
           </div>
         </div>
+       <label>Kug bhi</label>
+       
+       {formData?.category?.main && Object.entries(attributes[formData?.category?.main]).map((type, i)=>(
+        <div key={i}>
+          <label>{type[0]}</label>
+          {attributes[type[0]].map((value)=>(
+            <p>{value}</p>
+          ))}
+        </div>
+       ))}
+
       </div>
 
       {/* Gender */}
