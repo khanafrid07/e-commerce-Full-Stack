@@ -5,6 +5,7 @@ import beautyBanner from "../../../assets/beautyBanner.png"
 import BeautySection from "./BeautySection";
 import accessoriesBanner from "../../../assets/accessoriesBanner.png"
 import AccessoriesSection from "./AccessoriesSection";
+import FootwearSection from "./FoorwearSection";
 export default function CategoryFilter() {
   const { category } = useParams();
   const navigate = useNavigate();
@@ -86,7 +87,7 @@ export default function CategoryFilter() {
                   </p>
                 </div>
 
-                {/* Hover Badge */}
+              
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 origin-top-right">
                   <div className={`bg-gradient-to-r ${item.color} text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg`}>
                     New
@@ -104,7 +105,7 @@ export default function CategoryFilter() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
       
-      {/* Header Banner */}
+     
       <div className="relative w-full h-[35vh] md:h-[50vh] overflow-hidden border rounded-b-3xl shadow-lg mb-4">
         <img
           src={category=="Fashion"?fashionBanner:category=="Beauty"?beautyBanner:category=="Accessories"?accessoriesBanner:"footwear"}
@@ -112,10 +113,10 @@ export default function CategoryFilter() {
           className="w-full h-full object-cover"
         />
         
-        {/* Enhanced Overlay */}
+       
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
         
-        {/* Header Content */}
+      
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center ">
           <div className="mb-6">
             <p className="text-white/80 text-2xl md:text-2xl font-semibold uppercase tracking-widest mb-3 ">
@@ -131,14 +132,13 @@ export default function CategoryFilter() {
         </div>
       </div>
 
-      {/* Main Content */}
       {category === "Fashion" && (
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-20">
           
-          {/* Men Section */}
+         
           {renderSection("Men", fashionCategories.men)}
 
-          {/* Divider */}
+          
           <div className="my-20 px-4">
             <div className="relative h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent">
               <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-4">
@@ -158,6 +158,9 @@ export default function CategoryFilter() {
       )}
       {category=="Accessories" && (
         <AccessoriesSection/>
+      )}
+       {category=="Footwear" && (
+        <FootwearSection/>
       )}
 
       
