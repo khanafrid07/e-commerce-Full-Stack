@@ -4,11 +4,14 @@ export default function NewArrivals() {
 
     const {isLoading, isError, data} = useGetProductsQuery({sort:"newest", limit: 8})
     if(isLoading) return <p>LOading....</p>
-   const {allProducts} = data
+    if(data){
+         const {allProducts} = data
    console.log(data)
-
-
+        
     return (
         <LandingCard name={"New Arrivals"} products={allProducts}/>
     )
 }
+    }
+  
+

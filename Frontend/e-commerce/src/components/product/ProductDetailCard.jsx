@@ -1,13 +1,17 @@
 import { useState, useEffect } from "react";
 import { useAddToCartMutation } from "../../features/cart/cart";
+import { useCreateReviewsMutation } from "./detail/reviewSlice";
 import ProductImageGallery from "./detail/ProductImageGallery";
 import ProductInfo from "./detail/ProductInfo";
 import ProductDescription from "./detail/ProductDescription";
 import VariantSelector from "./detail/VariantSelector";
 import AddToCartSection from "./detail/AddToCartSection";
 import TrustBadges from "./detail/TrustBadges";
+import Reviews from "./detail/Reviews";
+import SuggesteedProduct from "./detail/SuggestedProduct";
 
 export default function ProductDetailCard({ data }) {
+  console.log("review", data)
   if (!data) return null;
 
   const [addToCart, { isLoading }] = useAddToCartMutation();
@@ -47,7 +51,7 @@ export default function ProductDetailCard({ data }) {
   // Get available options based on current selection
   const getAvailableOptions = (type) => {
     const otherTypes = variantTypes.filter(t => t !== type);
-    
+
     if (otherTypes.every(t => !selectedVariant[t])) {
       return [...new Set(allVariants.map(v => v.typeValues?.[type]).filter(Boolean))];
     }
@@ -64,10 +68,10 @@ export default function ProductDetailCard({ data }) {
   // Smart variant selection
   const handleVariantChange = (type, value) => {
     console.log(`🔄 Changing ${type} to ${value}`);
-    
+
     const newSelection = { ...selectedVariant, [type]: value };
     console.log("📝 New selection:", newSelection);
-    
+
     const exists = allVariants.some(v =>
       Object.entries(newSelection).every(([k, val]) => v.typeValues?.[k] === val)
     );
@@ -78,7 +82,7 @@ export default function ProductDetailCard({ data }) {
     } else {
       console.log("⚠️ No exact match, adjusting selection");
       const adjustedSelection = { ...newSelection };
-      
+
       variantTypes.forEach(otherType => {
         if (otherType !== type) {
           const available = allVariants.filter(v =>
@@ -86,13 +90,13 @@ export default function ProductDetailCard({ data }) {
               .filter(([k]) => k === type || k === otherType)
               .every(([k, val]) => v.typeValues?.[k] === val || k === otherType)
           );
-          
+
           if (available.length > 0) {
             adjustedSelection[otherType] = available[0].typeValues?.[otherType];
           }
         }
       });
-      
+
       console.log("📝 Adjusted selection:", adjustedSelection);
       setSelectedVariant(adjustedSelection);
     }
@@ -119,10 +123,10 @@ export default function ProductDetailCard({ data }) {
         setPrice(matched.price);
         setStock(matched.stock);
         setDiscount(matched.discount || 0);
-        
+
         const variantImages = matched.images?.length > 0 ? matched.images : productImages;
         setCurrentImages(variantImages);
-        
+
         const thumbnail = variantImages[matched.thumbnailIndex]?.url || variantImages[0]?.url || mainImage;
         setPreviewImage(thumbnail);
       } else {
@@ -133,13 +137,13 @@ export default function ProductDetailCard({ data }) {
         setPreviewImage(mainImage);
       }
     }
-    
+
     setQuantity(1);
   }, [selectedVariant, baseVariant, additionalVariants, productImages, mainImage, data]);
 
   const handleAddToCart = async (e) => {
     e.preventDefault();
-    
+
     if (stock <= 0) {
       alert("❌ This variant is out of stock");
       return;
@@ -148,7 +152,7 @@ export default function ProductDetailCard({ data }) {
     const cartData = {
       productId: data._id,
       quantity,
-      variants: selectedVariant, 
+      variants: selectedVariant,
       price: finalPrice,
     };
 
@@ -156,7 +160,7 @@ export default function ProductDetailCard({ data }) {
 
     try {
       await addToCart(cartData).unwrap();
-      
+
       console.log("✅ Successfully added to cart");
       alert("✅ Product added to cart successfully!");
     } catch (err) {
@@ -172,9 +176,9 @@ export default function ProductDetailCard({ data }) {
     <div className="w-full min-h-screen bg-gradient-to-br from-base-200 to-base-300 py-4 sm:py-8 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="grid lg:grid-cols-2 gap-6 lg:gap-8 bg-base-100 rounded-3xl shadow-2xl overflow-hidden">
-          
+
           {/* Left Side - Image Gallery */}
-          <div>
+          <div className="space-y-12">
             <ProductImageGallery
               images={currentImages}
               previewImage={previewImage}
@@ -183,6 +187,7 @@ export default function ProductDetailCard({ data }) {
               discount={discount}
             />
             <TrustBadges />
+          <SuggesteedProduct/>
           </div>
 
           {/* Right Side - Product Info */}
@@ -216,7 +221,10 @@ export default function ProductDetailCard({ data }) {
             />
 
             <TrustBadges mobile />
+            <Reviews reviews={data?.reviews}/>
+
           </div>
+          
         </div>
       </div>
     </div>

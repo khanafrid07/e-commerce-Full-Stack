@@ -2,7 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { fetchUser } from "./features/auth/authSlice";
-
+import ProductListing from "./components/product/Cateogry/ProductListing";
 import UserLayout from "./Pages/UserLayout"; // <- layout wrapper
 import ProductList from "./features/products/ProductList";
 import ProductDetail from "./features/products/ProductDetail";
@@ -35,14 +35,17 @@ function AppContent() {
       {/* User pages wrapped in UserLayout */}
       <Route element={<UserLayout />}>
         <Route index element={<Home />} />
+
+        <Route path="category/:category" element={<CategoryFilter/>}/>
+        <Route path="products" element={<ProductListing />} />
         <Route path="products/:id" element={<ProductDetail />} />
-        <Route path="category/:category" element={<CategoryFilter />} />
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<Checkout />} />
         <Route path="payment" element={<Payment />} />
         <Route path="orders" element={<Order />} />
         <Route path="orders/:id" element={<OrderDetails />} />
       </Route>
+
 
       {/* Auth */}
       <Route path="/login" element={<Login />} />

@@ -8,9 +8,10 @@ const app = express();
 
 
 const authRoute = require("./routes/authRoutes.js")
-const producRoute = require("./routes/productRoutes.js")
+const productRoute = require("./routes/productRoutes.js")
 const orderRoute = require("./routes/orderRoute.js")
 const cartRoute = require("./routes/cartRoutes.js")
+const reviewRoute = require("./routes/reviewRoutes.js")
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 
 app.use(express.json())
@@ -23,9 +24,10 @@ app.get("/", (req, res)=>{
 })
 
 app.use("/api/auth", authRoute)
-app.use("/api/products", producRoute)
+app.use("/api/products", productRoute)
 app.use("/api/orders", orderRoute)
 app.use("/api/cart", cartRoute)
+app.use("/api/reviews", reviewRoute)
 
 let port = process.env.PORT || 8080
 

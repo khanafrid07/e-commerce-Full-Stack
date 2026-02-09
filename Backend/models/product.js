@@ -71,7 +71,16 @@ const productSchema = new mongoose.Schema(
       default: true,
     },
     discount:Number,
-    featured: { type: Boolean, default: false }
+    featured: { type: Boolean, default: false },
+    reviews:[{
+
+     
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review"
+      
+    }
+
+    ]
   },
   
   { timestamps: true }
