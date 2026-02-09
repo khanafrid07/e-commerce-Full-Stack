@@ -1,10 +1,11 @@
 import { Sparkles, Heart, Star } from "lucide-react";
 import LandingCard from "../LandingCard";
 import { useGetProductsQuery } from "../../../features/products/productSlice";
+import { useNavigate } from "react-router-dom";
 
 export default function BeautySection() {
-  const { isLoading, data } = useGetProductsQuery({ sort: "featured", category: "Beauty" });
-
+  const { isLoading, data } = useGetProductsQuery({ sort: "featured", category: "Beauty", sub: ""});
+  const navigate = useNavigate()
   const routines = [
     {
       name: "Skincare",
@@ -78,6 +79,7 @@ export default function BeautySection() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {routines.map((item, idx) => (
             <div
+            onClick={()=>navigate(`/products?category=beauty&type=${item.name.toLowerCase()}`)}
               key={item.name}
               className="group relative cursor-pointer rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
             >
@@ -161,6 +163,7 @@ export default function BeautySection() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto">
           {skinConcern.map((concern, idx) => (
             <div
+            onClick={()=>navigate(`/products?category=beauty&concern=${concern.name}`)}
               key={idx}
               className="group relative cursor-pointer flex flex-col items-center"
             >

@@ -4,11 +4,11 @@ export default function TrendingProducts() {
 
     const {isLoading, isError, data} = useGetProductsQuery({sort:"trending", limit: 8})
     if(isLoading) return <p>LOading....</p>
-   const {allProducts} = data
-   console.log(data)
-
-
+   if(data){
+    const {allProducts} = data
     return (
-        <LandingCard name={"Trending Items"} products={allProducts}/>
+        <LandingCard name={"Trending Items"} products={allProducts || []}/>
     )
-}
+ }
+   }
+

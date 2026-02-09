@@ -5,8 +5,10 @@ import beautyBanner from "../../../assets/beautyBanner.png"
 import BeautySection from "./BeautySection";
 import accessoriesBanner from "../../../assets/accessoriesBanner.png"
 import AccessoriesSection from "./AccessoriesSection";
-import FootwearSection from "./FoorwearSection";
+import FootwearSection from "./FootwearSection";
+
 export default function CategoryFilter() {
+  
   const { category } = useParams();
   const navigate = useNavigate();
 
@@ -51,7 +53,7 @@ export default function CategoryFilter() {
           {items.map((item) => (
             <button
               key={item.name}
-              onClick={() => navigate(`/category/fashion/${gender.toLowerCase()}/${item.name}`)}
+              onClick={() => navigate(`/products?category=clothes&gender=${gender.toLowerCase()}&type=${item.name}`)}
               className="group relative h-full transition-all duration-300 hover:-translate-y-4"
             >
               {/* Card Container */}

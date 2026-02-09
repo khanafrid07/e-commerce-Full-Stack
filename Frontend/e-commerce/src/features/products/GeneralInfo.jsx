@@ -4,7 +4,7 @@ export default function GeneralInfo({ formData, setFormData }) {
   const categories = ["Clothes", "Footwear", "Accessories", "Beauty"];
 
   const subCategories = {
-    Clothes: ["T-Shirts", "Jeans", "Jacket", "Dresses", "Shirts", "Hoodies"],
+    Clothes: ["T-Shirts", "Jeans", "Jacket", "Dresses", "Shirts", "Hoodies", "Tops"],
     Footwear: ["Sneakers", "Sandals", "Boots", "Formal Shoes"],
     Accessories: ["Bags", "Belts", "Watches", "Sunglasses"],
     Beauty: ["Skincare", "Makeup", "Fragrance", "Haircare"]

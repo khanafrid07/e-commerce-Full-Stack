@@ -1,6 +1,7 @@
 import { ShoppingBag, Watch, Award, Eye, ArrowRight } from "lucide-react";
-
+import { useNavigate } from "react-router-dom";
 export default function AccessoriesSection() {
+  const navigate = useNavigate()
   const accessories = [
     {
       name: "Bags",
@@ -34,12 +35,10 @@ export default function AccessoriesSection() {
 
   return (
     <section className="relative min-h-screen bg-gradient-to-br from-base-100 via-base-200 to-base-100 px-4 md:px-10 py-16 overflow-hidden">
-      
-      {/* Decorative background elements */}
+    
       <div className="absolute top-20 right-10 w-72 h-72 bg-primary/5 rounded-full blur-3xl"></div>
       <div className="absolute bottom-20 left-10 w-96 h-96 bg-secondary/5 rounded-full blur-3xl"></div>
 
-      {/* Header */}
       <div className="relative text-center mb-16 space-y-4">
         <div className="inline-block">
           <div className="badge badge-lg badge-primary mb-4 gap-2">
@@ -64,38 +63,34 @@ export default function AccessoriesSection() {
         </p>
       </div>
 
-      {/* Accessories Grid */}
       <div className="relative grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto mb-16">
         {accessories.map((acc, i) => {
           const Icon = acc.icon;
           return (
             <div
+            onClick={()=>navigate(`/products?category=accessories&type=${acc.name.toLowerCase()}`)}
               key={i}
               className="group relative cursor-pointer"
             >
-              {/* Card Container */}
+             
               <div className="relative bg-base-100 rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-3">
-                
-                {/* Image Container */}
+           
                 <div className="relative h-80 overflow-hidden">
                   <img
                     src={acc.img}
                     alt={acc.name}
                     className="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-2"
                   />
-                  
-                  {/* Dark overlay */}
+                
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-300" />
-                  
-                  {/* Colored overlay */}
+                 
                   <div className={`absolute inset-0 bg-gradient-to-br ${acc.color} opacity-0 group-hover:opacity-30 transition-opacity duration-500 mix-blend-overlay`} />
 
-                  {/* Icon - appears on hover */}
+               
                   <div className="absolute top-6 right-6 w-12 h-12 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 opacity-0 group-hover:opacity-100 scale-0 group-hover:scale-100 transition-all duration-500">
                     <Icon className="text-white" size={24} />
                   </div>
 
-                  {/* Number badge */}
                   <div className="absolute top-6 left-6 w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-lg shadow-lg transform -rotate-12 group-hover:rotate-0 transition-transform duration-500">
                     <span className={`bg-gradient-to-br ${acc.color} bg-clip-text text-transparent`}>
                       {i + 1}
