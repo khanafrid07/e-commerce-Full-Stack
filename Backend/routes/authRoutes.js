@@ -4,11 +4,17 @@ const bcrypt = require("bcrypt");
 const User = require("../models/user.js");
 const verifyToken = require("../middlewares/verifyUser.js");
 const router = express.Router()
+<<<<<<< HEAD
 const {userSchema} = require("../joi.js")
 const validateSchema = require("../middlewares/validate.js")
 
 
 router.post("/register",validateSchema(userSchema), async(req, res)=>{
+=======
+
+
+router.post("/register", async(req, res)=>{
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
     const {name, email, password} = req.body;
     try{
 

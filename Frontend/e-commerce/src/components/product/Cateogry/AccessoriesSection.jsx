@@ -68,7 +68,11 @@ export default function AccessoriesSection() {
           const Icon = acc.icon;
           return (
             <div
+<<<<<<< HEAD
             onClick={()=>navigate(`/products?category=accessories&gender=men&type=${acc.name.toLowerCase()}`)}
+=======
+            onClick={()=>navigate(`/products?category=accessories&type=${acc.name.toLowerCase()}`)}
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
               key={i}
               className="group relative cursor-pointer"
             >
