@@ -1,6 +1,7 @@
 import { useCreateReviewsMutation } from "./reviewSlice";
 import { useState } from "react";
 import { useParams } from "react-router";
+<<<<<<< HEAD
 import Alert from "../../Alert";
 
 export default function Reviews({ reviews }) {
@@ -9,6 +10,11 @@ export default function Reviews({ reviews }) {
     message: "",
     type: "success"
   })
+=======
+
+export default function Reviews({ reviews }) {
+  const [createReviews] = useCreateReviewsMutation();
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
   const { id } = useParams();
 
   const [review, setReview] = useState({
@@ -39,7 +45,11 @@ export default function Reviews({ reviews }) {
 
     try {
       await createReviews(review).unwrap();
+<<<<<<< HEAD
       setAlert({message: "Review added successfully", type: "success"})
+=======
+      alert("Review added successfully");
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
 
       setReview({
         rating: 2,
@@ -48,11 +58,19 @@ export default function Reviews({ reviews }) {
       });
     } catch (err) {
       console.log(err);
+<<<<<<< HEAD
       setAlert({message: err?.data?.message || "Error adding review", type: "error"})
     }
   }
 
  
+=======
+      alert("Error adding review");
+    }
+  }
+
+  // pagination logic
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
   const startIndex = page * reviewsPerPage;
   const currentReviews = reviews?.slice(
     startIndex,
@@ -61,9 +79,15 @@ export default function Reviews({ reviews }) {
 
   return (
     <div>
+<<<<<<< HEAD
       
       <h3 className="text-2xl font-semibold mb-4">Reviews & Ratings</h3>
 
+=======
+      <h3 className="text-2xl font-semibold mb-4">Reviews & Ratings</h3>
+
+      {/* Review Form */}
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
       <form onSubmit={handleSubmit} className="relative space-y-4">
         <div className="rating">
           {[1, 2, 3, 4, 5].map((num) => (
@@ -78,7 +102,10 @@ export default function Reviews({ reviews }) {
             />
           ))}
         </div>
+<<<<<<< HEAD
         
+=======
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
 
         <textarea
           className="textarea w-full"
@@ -93,7 +120,11 @@ export default function Reviews({ reviews }) {
         </button>
       </form>
 
+<<<<<<< HEAD
      <Alert message={alert.message} type={alert.type} onClose ={()=>setAlert({message:""})}/>
+=======
+      {/* Reviews List */}
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
       <div className="grid grid-cols-2 gap-4 mt-4">
         {currentReviews?.map((rev) => (
           <div key={rev._id} className="border border-gray rounded-sm p-2">

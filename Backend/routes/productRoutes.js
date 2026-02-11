@@ -4,8 +4,11 @@ const Product = require("../models/product.js")
 const verifyToken = require("../middlewares/verifyUser.js")
 const multer = require("multer")
 const upload = require("../config/multer.js")
+<<<<<<< HEAD
 const {productSchema} =require("../joi.js")
 const validateSchema = require("../middlewares/validate.js")
+=======
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
 router.get("/", async (req, res) => {
   try {
     const {
@@ -86,7 +89,11 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ message: "Error fetching product", error: err.message }); 8
   }
 });
+<<<<<<< HEAD
 router.post("/",validateSchema(productSchema), upload.any(), async (req, res) => {
+=======
+router.post("/", upload.any(), async (req, res) => {
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
   try {
     const parsedCategory = JSON.parse(req.body.category);
     const parsedVariants = JSON.parse(req.body.variants);

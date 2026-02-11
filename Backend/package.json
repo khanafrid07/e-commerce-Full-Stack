@@ -16,7 +16,10 @@
     "dot-env": "^0.0.1",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
+<<<<<<< HEAD
     "joi": "^18.0.2",
+=======
+>>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.1",
     "multer": "^2.0.2"
