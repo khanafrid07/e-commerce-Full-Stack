@@ -1,20 +1,83 @@
 import { Search, ShoppingCart, Menu } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { logout } from "../features/auth/authSlice";
 import { useDispatch } from "react-redux";
+import { useState } from "react";
+import { useEffect } from "react";
+import { useRef } from "react";
 
 export default function Navbar({ wishCount = 0 }) {
+  const [searchQuery, setSearchQuery] = useState("")
+  const [suggestion, setSuggestion] = useState([])
+  const [showSuggestion, setShowSuggestion] = useState(false)
   const { user } = useSelector((state) => state.auth);
   const cartCount = useSelector((state) => state.cart?.items?.length || 0);
   const isLoggedIn = !!user;
   const dispatch = useDispatch()
+  const navigate = useNavigate()
+  const searchRef = useRef(null)
 
-  function onLogout(e){
+  function onLogout(e) {
     e.preventDefault();
     dispatch(logout())
-    
+
   }
+
+  useEffect(()=>{
+    if(!searchQuery){
+      setSuggestion([]);
+      return
+    }
+
+    const timeout = setTimeout(async()=>{
+      try{
+        const res = await fetch(`http://localhost:8080/api/products?search=${encodeURIComponent(searchQuery)}`);
+
+        const data = await res.json()
+       setSuggestion(data.allProducts)
+
+      }catch(err){
+        console.log(err, "err fetching producr")
+      }
+
+      
+    }, 300)
+
+    return ()=>clearTimeout(timeout)
+  }, [searchQuery])
+
+  useEffect(()=>{
+    const handler = (e)=>{
+      if(searchRef.current && !searchRef.current.contains(e.target)){
+        setShowSuggestion(false)
+      }else if(searchRef.current.contains(e.target)){
+        setShowSuggestion(true)
+      }
+    }
+    document.addEventListener("mousedown", handler)
+
+    return ()=>document.removeEventListener("mousedown", handler)
+
+    
+
+  }, [])
+
+  function handleProductClick(productId){
+    navigate(`/products/${productId}`)
+    setShowSuggestion(false)
+  
+
+  }
+
+  function handleSearch(e) {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      navigate(`/products?search=${encodeURIComponent(searchQuery.trim())}`)
+      setSearchQuery("")
+    }
+  }
+
 
   return (
     <div className="navbar bg-white text-gray-800 shadow-md px-6 py-3 gap-4 ">
@@ -27,15 +90,29 @@ export default function Navbar({ wishCount = 0 }) {
         </Link>
       </div>
 
-      {/* Search bar */}
-      <div className="hidden md:flex items-center bg-gray-100 border rounded-lg px-3 py-1">
-        <Search className="w-5 h-5 text-gray-500 mr-2" />
-        <input
-          type="text"
-          placeholder="Search products..."
-          className="bg-transparent outline-none text-gray-700 w-64"
-        />
-      </div>
+      <form onSubmit={handleSearch}>
+
+        <div className="hidden relative md:flex justify-center items-center bg-gray-100 border rounded-lg px-3 py-1 input">
+          <Search className="w-5 h-5 text-gray-500 mr-2" />
+          <input
+            type="text"
+            value={searchQuery}
+            placeholder="Search products..."
+            className="bg-transparent outline-none text-gray-700 w-64"
+            onChange={(e) => {setSearchQuery(e.target.value);
+              setShowSuggestion(true)
+
+            }}
+          />
+         {showSuggestion && suggestion.length > 0 && (
+          <div ref={searchRef} className="absolute top-12 border shadow-md bg-base-100 rounded-lg w-full z-50">
+            {suggestion.map((product)=>(
+              <div onClick={()=>handleProductClick(product._id)} className="border-b hover:bg-gray-400 cursor-pointer px-4 py-2 text-left truncate text-left">{product.title}</div>
+            ))}
+          </div>
+         )}
+        </div>
+      </form>
 
       {/* Right section */}
       <div className="flex items-center gap-8">

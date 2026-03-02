@@ -4,24 +4,21 @@ const Product = require("../models/product.js")
 const verifyToken = require("../middlewares/verifyUser.js")
 const multer = require("multer")
 const upload = require("../config/multer.js")
-<<<<<<< HEAD
-const {productSchema} =require("../joi.js")
+const { productSchema } = require("../joi.js")
 const validateSchema = require("../middlewares/validate.js")
-=======
->>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
 router.get("/", async (req, res) => {
   try {
     const {
       sort,
-      limit = 12,
+      limit ,
       category,
+      categories,
+      sub,
       type,
-      gender
+      gender,
+      search
     } = req.query;
-    console.log("sort", sort)
 
-
-    console.log(category, gender, type)
     const capitalize = (str) => {
       if (!str) return null;
       return str.charAt(0).toUpperCase() + str.slice(1);
@@ -35,38 +32,56 @@ router.get("/", async (req, res) => {
       val !== "undefined";
 
     let filter = {};
-    if (isValid(category)) {
+
+
+    if (isValid(categories)) {
+      const allCategories = categories.split(",");
+      const catArray = allCategories.map(capitalize);
+
+      filter["category.main"] = { $in: catArray };
+    }
+
+    else if (isValid(category)) {
       filter["category.main"] = capitalize(category);
     }
 
-    if (sort === "featured") {
-      filter.featured = true;
-    }
 
-    if (isValid(gender)) {
-      filter["category.gender"] = capitalize(gender);
+    if (isValid(sub)) {
+      filter["category.sub"] = capitalize(sub);
     }
 
     if (isValid(type)) {
       filter["category.sub"] = capitalize(type);
     }
 
-    console.log("filter", filter)
 
-    
+    if (isValid(gender)) {
+      filter["category.gender"] = capitalize(gender);
+    }
+
+
+    if (sort === "featured") {
+      filter.featured = true;
+    }
     let sortQuery = {};
     if (sort === "trending") sortQuery = { soldCount: -1 };
     else if (sort === "newest") sortQuery = { createdAt: -1 };
     else if (sort === "priceLow") sortQuery = { basePrice: 1 };
     else if (sort === "priceHigh") sortQuery = { basePrice: -1 };
 
+    console.log("FILTER:", filter);
 
+    if (search) {
+      filter = {
+        $text: { $search: search }
+      }
+    }
 
     const allProducts = await Product.find(filter)
       .sort(sortQuery)
       .limit(Number(limit));
-    console.log(allProducts)
 
+  
     return res.status(200).json({ allProducts });
 
   } catch (err) {
@@ -76,6 +91,7 @@ router.get("/", async (req, res) => {
     });
   }
 });
+
 
 
 
@@ -89,17 +105,13 @@ router.get("/:id", async (req, res) => {
     res.status(500).json({ message: "Error fetching product", error: err.message }); 8
   }
 });
-<<<<<<< HEAD
-router.post("/",validateSchema(productSchema), upload.any(), async (req, res) => {
-=======
-router.post("/", upload.any(), async (req, res) => {
->>>>>>> 1a7b0e643b2f8ff447119d1baaa740f2bd406485
+router.post("/", validateSchema(productSchema), upload.any(), async (req, res) => {
   try {
     const parsedCategory = JSON.parse(req.body.category);
     const parsedVariants = JSON.parse(req.body.variants);
     const parsedBaseVariant = JSON.parse(req.body.baseVariant);
 
-    
+
     const mainImages = req.files
       .filter(f => f.fieldname === "images")
       .map((file, index) => ({
@@ -108,7 +120,7 @@ router.post("/", upload.any(), async (req, res) => {
         isMain: index === 0,
       }));
 
-    
+
     parsedVariants.forEach((variant, i) => {
       const variantFiles = req.files.filter(
         f => f.fieldname === `variantImages_${i}`

@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Funnel, X } from "lucide-react";
+import { useGetProductsQuery } from "../../../features/products/productSlice";
+import LandingCard from "../LandingCard";
 
 export default function ProductListing() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -16,7 +18,7 @@ export default function ProductListing() {
     category: "",
     price: "",
     discount: "",
-    type: ""
+    type: "",
   });
 
   const [open, setOpen] = useState(false);
@@ -27,28 +29,45 @@ export default function ProductListing() {
       category: categoryParam || "",
       price: priceParam || "",
       discount: discountParam || "",
-      type: typeParam || ""
+      type: typeParam || "",
     });
   }, [genderParam, categoryParam, priceParam, discountParam, typeParam]);
 
   const subCategories = {
     clothes: {
       men: ["T-Shirts", "Jeans", "Jacket", "Shirts", "Hoodies"],
-      women: ["Tops", "Dresses", "Jeans", "Shirts"]
+      women: ["Tops", "Dresses", "Jeans", "Shirts"],
     },
     footwear: {
       men: ["Sneakers", "Boots", "Formal Shoes"],
-      women: ["Sandals", "Boots", "Sneakers"]
+      women: ["Sandals", "Boots", "Sneakers"],
     },
-    beauty: ["Skincare", "Makeup", "Haircare"],
+    beauty: ["Skincare", "Makeup", "Haircare", "Fragrance"],
     accessories: {
       men: ["Belt", "Watches", "Perfumes", "Sunglasses", "Rings"],
-      women: ["Bags", "Watches", "Perfumes", "Rings"]
-    }
+      women: ["Bags", "Watches", "Perfumes", "Rings"],
+    },
   };
+
+  const paramsObject = Object.fromEntries(searchParams.entries());
+  const { data, isLoading } = useGetProductsQuery(paramsObject);
 
   function handleFilterChange(key, value) {
     const newParams = new URLSearchParams(searchParams);
+
+    // reset dependent filters
+    if (key === "category") {
+      newParams.delete("type");
+
+      // beauty has no gender-based subcategory
+      if (value === "beauty") {
+        newParams.delete("gender");
+      }
+    }
+
+    if (key === "gender") {
+      newParams.delete("type");
+    }
 
     if (value) {
       newParams.set(key, value.toLowerCase());
@@ -59,10 +78,15 @@ export default function ProductListing() {
     setSearchParams(newParams);
   }
 
+  if (isLoading) return <p className="p-4">Loading...</p>;
+  if (!data) return null;
+
+  const { allProducts } = data;
+
   return (
     <div className="flex min-h-screen bg-gray-50">
 
-      
+      {/* Overlay */}
       {open && (
         <div
           className="fixed inset-0 bg-black/40 z-40 md:hidden"
@@ -70,26 +94,24 @@ export default function ProductListing() {
         />
       )}
 
-      
+      {/* Sidebar */}
       <div
-        className={`
-          fixed md:static top-0 left-0 z-50 h-full bg-white w-[80%] md:w-[260px]
-          shadow-xl md:shadow-none p-4
-          transform transition-all duration-300 ease-in-out
-          ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-        `}
+        className={`fixed md:static top-0 left-0 z-50 h-full bg-white w-[80%] md:w-[260px]
+        shadow-xl md:shadow-none p-4
+        transform transition-transform duration-300 ease-in-out
+        ${open ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
       >
-      
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Filters</h2>
           <X className="md:hidden cursor-pointer" onClick={() => setOpen(false)} />
         </div>
 
-        
+        {/* Category */}
         <Section title="Category">
           {Object.keys(subCategories).map((cat) => (
             <Radio
               key={cat}
+              name="category"
               label={cat}
               checked={filter.category === cat}
               onChange={() => handleFilterChange("category", cat)}
@@ -97,18 +119,22 @@ export default function ProductListing() {
           ))}
         </Section>
 
-       
-        <Section title="Gender">
-          {["men", "women"].map((g) => (
-            <Radio
-              key={g}
-              label={g}
-              checked={filter.gender === g}
-              onChange={() => handleFilterChange("gender", g)}
-            />
-          ))}
-        </Section>
+        {/* Gender */}
+        {filter.category !== "beauty" && (
+          <Section title="Gender">
+            {["men", "women"].map((g) => (
+              <Radio
+                key={g}
+                name="gender"
+                label={g}
+                checked={filter.gender === g}
+                onChange={() => handleFilterChange("gender", g)}
+              />
+            ))}
+          </Section>
+        )}
 
+        {/* Type */}
         <Section title="Type">
           {filter.category &&
             (filter.gender
@@ -117,18 +143,20 @@ export default function ProductListing() {
             )?.map((t) => (
               <Radio
                 key={t}
+                name="type"
                 label={t}
                 checked={filter.type === t.toLowerCase()}
-                onChange={() => handleFilterChange("type", t)}
+                onChange={() => handleFilterChange("type", t.toLowerCase())}
               />
             ))}
         </Section>
 
-        
+        {/* Price */}
         <Section title="Price">
           {["low", "high"].map((p) => (
             <Radio
               key={p}
+              name="price"
               label={p === "low" ? "Low to High" : "High to Low"}
               checked={filter.price === p}
               onChange={() => handleFilterChange("price", p)}
@@ -136,11 +164,12 @@ export default function ProductListing() {
           ))}
         </Section>
 
-       
+        {/* Discount */}
         <Section title="Discount">
           {["10", "20", "30", "40", "50", "60", "80"].map((d) => (
             <Radio
               key={d}
+              name="discount"
               label={`${d}% & above`}
               checked={filter.discount === d}
               onChange={() => handleFilterChange("discount", d)}
@@ -149,11 +178,11 @@ export default function ProductListing() {
         </Section>
       </div>
 
-    
+      {/* Products */}
       <div className="flex-1 p-4">
 
-      
-        <div className="md:hidden mb-4 flex items-center gap-2">
+        {/* Mobile filter button */}
+        <div className="md:hidden mb-4">
           <button
             onClick={() => setOpen(true)}
             className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg shadow"
@@ -162,27 +191,11 @@ export default function ProductListing() {
           </button>
         </div>
 
-       
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="h-40 bg-white shadow rounded-xl flex items-center justify-center">
-            Product 1
-          </div>
-          <div className="h-40 bg-white shadow rounded-xl flex items-center justify-center">
-            Product 2
-          </div>
-          <div className="h-40 bg-white shadow rounded-xl flex items-center justify-center">
-            Product 3
-          </div>
-          <div className="h-40 bg-white shadow rounded-xl flex items-center justify-center">
-            Product 4
-          </div>
-        </div>
+        <LandingCard products={allProducts} />
       </div>
     </div>
   );
 }
-
-
 
 function Section({ title, children }) {
   return (
@@ -193,11 +206,12 @@ function Section({ title, children }) {
   );
 }
 
-function Radio({ label, checked, onChange }) {
+function Radio({ label, checked, onChange, name }) {
   return (
     <label className="flex items-center gap-2 cursor-pointer text-sm hover:text-black">
       <input
         type="radio"
+        name={name}
         checked={checked}
         onChange={onChange}
         className="accent-black"

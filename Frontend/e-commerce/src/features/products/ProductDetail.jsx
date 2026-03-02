@@ -33,7 +33,7 @@ export default function ProductDetail() {
   return (
 
         <>
-          <ProductDetailCard data={product} />
+          <ProductDetailCard loading = {isLoading} data={product} />
 
         
         </>

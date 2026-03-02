@@ -3,17 +3,21 @@ import { useGetCartQuery, useClearCartMutation } from "../features/cart/cart.js"
 import { useCreateOrderMutation } from "../features/orders/orderSlice";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-
+import { useStripe, useElements, CardElement } from "@stripe/react-stripe-js";
 export default function Payment() {
   const { currentAddress } = useSelector((state) => state.auth);
   const { data: cartData, isLoading, isError } = useGetCartQuery();
   const [createOrder] = useCreateOrderMutation();
   const [clearCart] = useClearCartMutation();
   const navigate = useNavigate();
+  const stripe = useStripe();
+  const elements = useElements()
+
 
   const items = cartData?.items || [];
 
   const [paymentMethod, setPaymentMethod] = useState("");
+  const [loading, setLoading] = useState(false)
 
   if (isLoading) return <p className="p-6 text-center">Loading cart...</p>;
   if (isError) return <p className="p-6 text-center text-red-500">Error loading cart.</p>;
@@ -24,46 +28,95 @@ export default function Payment() {
   const discount = 0;
   const total = subtotal + shipping - discount;
 
+
+
   const handleSubmit = async (e) => {
-  e.preventDefault();
+    e.preventDefault();
 
-  if (!paymentMethod) {
-    alert("Please select a payment method.");
-    return;
-  }
+    if (!paymentMethod) {
+      alert("Please select a payment method.");
+      return;
+    }
 
-  if (!currentAddress) {
-    alert("Please select a delivery address.");
-    return;
-  }
+    if (!currentAddress) {
+      alert("Please select a delivery address.");
+      return;
+    }
 
-  
-  const orderItems = items.map((item) => ({
-    product: item.product._id,
-    quantity: item.quantity,
-    price: item.price,
-    variant: {typeValue:item.variant, variantImage: {...item.variantImages?.[0]}}
-  }));
 
-  const orderData = {
-    products: orderItems, 
-    totalPrice: total,
-    paymentMethod,
-    shippingAddress: currentAddress,
-  }; 
-  console.log(orderData)
-  console.log("it", items)
+    const orderItems = items.map((item) => ({
+      product: item.product._id,
+      quantity: item.quantity,
+      price: item.price,
+      variant: { typeValue: item.variant, variantImage: { ...item.variantImages?.[0] } }
+    }));
 
-  try {
-    await createOrder(orderData).unwrap();
-    await clearCart().unwrap();
-    alert("✅ Order placed successfully!");
-    navigate("/orders");
-  } catch (err) {
-    console.error("Error placing order:", err);
-    alert("❌ Failed to place order. Please try again.");
-  }
-};
+    const orderData = {
+      products: orderItems,
+      totalPrice: total,
+      paymentMethod,
+      shippingAddress: currentAddress,
+    };
+    console.log(orderData)
+    console.log("it", items)
+
+
+
+    if (paymentMethod == "Card") {
+      const res = await fetch("http://localhost:8080/api/payment/create-intent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total * 100 }), // Stripe uses smallest currency unit (paise)
+      });
+      if (!res.ok) {
+        alert("response failed")
+        setLoading(false)
+        return false
+
+      }
+
+      setLoading(true)
+      const { clientSecret } = await res.json();
+      if (!stripe || !elements) {
+        alert("Stripe not ready yet");
+        setLoading(false);
+        return;
+      }
+
+
+      const card = elements.getElement(CardElement)
+      const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
+        payment_method: {
+          card: card,
+          billing_details: {
+            name: currentAddress.firstName + " " + currentAddress.lastName
+          }
+        }
+      })
+      if (error) {
+        alert(error.message)
+        setLoading(false)
+      } else if (paymentIntent.status == "succeeded") {
+        setLoading(false)
+        await createOrder(orderData).unwrap()
+        await clearCart().unwrap()
+        navigate("/orders")
+      }
+    } else {
+
+      try {
+        await createOrder(orderData).unwrap();
+        await clearCart().unwrap();
+        alert("✅ Order placed successfully!");
+        navigate("/orders");
+      } catch (err) {
+        console.error("Error placing order:", err);
+        alert("❌ Failed to place order. Please try again.");
+      }
+
+    }
+
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex justify-center py-10">
@@ -141,6 +194,19 @@ export default function Payment() {
                 {method === "Online" ? "UPI" : method}
               </label>
             ))}
+            {paymentMethod === "Card" && (
+              <div className="border rounded p-4 mb-4">
+                <CardElement
+                  options={{
+                    style: {
+                      base: { fontSize: "16px", color: "#424770" },
+                      invalid: { color: "#9e2146" },
+                    },
+                  }}
+                />
+              </div>
+            )}
+
           </div>
 
           <div className="border rounded p-4">
@@ -156,8 +222,8 @@ export default function Payment() {
             )}
           </div>
 
-          <button onClick={handleSubmit} className="btn btn-primary mt-4 w-full">
-            Pay Now
+          <button disabled={loading} onClick={handleSubmit} className="btn btn-primary mt-4 w-full">
+            {loading ? "Processing" : "Pay now"}
           </button>
         </div>
 

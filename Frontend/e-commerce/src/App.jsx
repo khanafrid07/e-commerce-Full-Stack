@@ -3,9 +3,9 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { fetchUser } from "./features/auth/authSlice";
 import ProductListing from "./components/product/Cateogry/ProductListing";
-import UserLayout from "./Pages/UserLayout"; // <- layout wrapper
+import UserLayout from "./Pages/UserLayout"; 
 import ProductList from "./features/products/ProductList";
-import ProductDetail from "./features/products/ProductDetail";
+// import ProductDetail from "./features/products/ProductDetail";
 import Cart from "./components/Cart";
 import Checkout from "./Pages/Checkout";
 import Payment from "./Pages/Payment";
@@ -13,7 +13,6 @@ import Order from "./components/User/Order";
 import OrderDetails from "./components/OrderDetails";
 import Login from "./features/auth/Login";
 import Register from "./features/auth/Register";
-
 import DashboardLayout from "./components/DashboardLayout";
 import DashboardHome from "./Pages/DashboardHome";
 import ProductForm from "./features/products/ProductForm";
@@ -22,6 +21,13 @@ import AdminOrder from "./Pages/AdminOrder";
 import UpdateProduct from "./features/products/UpdateProduct";
 import Home from "./Pages/Home";
 import CategoryFilter from "./components/product/Cateogry/CateogryFilter";
+import ProductDetail from "./components/product/detail/productDetails/ProductDetail";
+import ProtectedRoute from "./components/ProtectedRote"
+import BannerManagement from "./features/Banners/BannerManagement";
+import {Elements} from "@stripe/react-stripe-js"
+import { loadStripe } from "@stripe/stripe-js";
+
+const stripePromise = loadStripe("pk_test_51QlWeFQemhG2QfvsGG1PqGASRwoKpb3CV9iBeVeHpYYiDiXApNSn2i9YiHUU3XiLRb7QPXem90utPmVVJ5f0Ewoh00shYEBk3E")
 
 function AppContent() {
   const dispatch = useDispatch();
@@ -41,24 +47,29 @@ function AppContent() {
         <Route path="products/:id" element={<ProductDetail />} />
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<Checkout />} />
-        <Route path="payment" element={<Payment />} />
+        <Route path="payment" element={<Elements stripe={stripePromise}>
+          <Payment/>
+
+        </Elements>} />
         <Route path="orders" element={<Order />} />
         <Route path="orders/:id" element={<OrderDetails />} />
+          <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       </Route>
 
 
       {/* Auth */}
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+    
 
       {/* Dashboard */}
-      <Route path="/dashboard" element={<DashboardLayout />}>
+      <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
         <Route index element={<DashboardHome />} />
         <Route path="add" element={<ProductForm />} />
         <Route path="manage" element={<ManageProducts />} />
         <Route path="update-product/:id" element={<UpdateProduct />} />
         <Route path="orders" element={<AdminOrder />} />
         <Route path="orders/:id" element={<OrderDetails />} />
+        <Route path="banners" element = {<BannerManagement/>}/>
       </Route>
     </Routes>
   );

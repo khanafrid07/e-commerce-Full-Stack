@@ -14,6 +14,7 @@ export default {
         spinSlow: "spin 3s linear infinite",
         spinFast: "spin 0.5s linear infinite",
       },
+      
       colors: {
         primary: "#2563eb",
         secondary: "#f97316",

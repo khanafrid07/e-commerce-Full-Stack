@@ -1,14 +1,15 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronRight, ShoppingBag, Sparkles } from "lucide-react";
-import fashionBanner from "../../../assets/bannerFashion.png";
-import beautyBanner from "../../../assets/beautyBanner.png"
+
 import BeautySection from "./BeautySection";
-import accessoriesBanner from "../../../assets/accessoriesBanner.png"
+
 import AccessoriesSection from "./AccessoriesSection";
 import FootwearSection from "./FootwearSection";
 
+import CategoryBanner from "./CategoryBanner";
+
 export default function CategoryFilter() {
-  
+
   const { category } = useParams();
   const navigate = useNavigate();
 
@@ -25,6 +26,7 @@ export default function CategoryFilter() {
       { name: "dresses", image: "https://i.ytimg.com/vi/9ZRuDUejrkQ/hq720.jpg?sqp=-oaymwEhCK4FEIIDSFryq4qpAxMIARUAAAAAGAElAADIQj0AgKJD&rs=AOn4CLDuSvO0eIDOksQ4P-SPyXTB3FUaWg", color: "from-purple-600 to-purple-700" },
       { name: "jackets", image: "https://www.instyle.com/thmb/OOPheWbk8K2T2RjnSLXwiIE6lXw=/750x0/filters:no_upscale():max_bytes(150000):strip_icc():format(webp)/jackets-fad3552e9c974578b74ffce1768b7ba0.jpg", color: "from-fuchsia-600 to-fuchsia-700" },
     ],
+
   };
 
   const renderSection = (gender, items) => {
@@ -50,7 +52,7 @@ export default function CategoryFilter() {
 
         {/* Category Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 md:gap-8 px-2">
-          {items.map((item) => (
+          {items?.map((item) => (
             <button
               key={item.name}
               onClick={() => navigate(`/products?category=clothes&gender=${gender.toLowerCase()}&type=${item.name}`)}
@@ -58,7 +60,7 @@ export default function CategoryFilter() {
             >
               {/* Card Container */}
               <div className="relative rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 h-64 md:h-72">
-                
+
                 {/* Image Background */}
                 <img
                   src={item.image}
@@ -89,7 +91,7 @@ export default function CategoryFilter() {
                   </p>
                 </div>
 
-              
+
                 <div className="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-all duration-300 transform scale-0 group-hover:scale-100 origin-top-right">
                   <div className={`bg-gradient-to-r ${item.color} text-white px-4 py-2 rounded-full font-bold text-sm shadow-lg`}>
                     New
@@ -106,41 +108,20 @@ export default function CategoryFilter() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-gray-50 to-white">
-      
-     
+
+
       <div className="relative w-full h-[35vh] md:h-[50vh] overflow-hidden border rounded-b-3xl shadow-lg mb-4">
-        <img
-          src={category=="Fashion"?fashionBanner:category=="Beauty"?beautyBanner:category=="Accessories"?accessoriesBanner:"footwear"}
-          alt="Fashion Banner"
-          className="w-full h-full object-cover"
-        />
-        
-       
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
-        
-      
-        <div className="absolute inset-0 flex flex-col items-center justify-center text-center ">
-          <div className="mb-6">
-            <p className="text-white/80 text-2xl md:text-2xl font-semibold uppercase tracking-widest mb-3 ">
-              Welcome to
-            </p>
-            <h1 className="animate-pulse text-5xl md:text-7xl font-black text-black capitalize drop-shadow-2xl mb-4 drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
-              {category}
-            </h1>
-          </div>
-          <p className="text-white/90 text-lg md:text-xl max-w-2xl drop-shadow-[0_0_10px_rgba(255,255,255,0.8)]">
-            Discover the latest trends and timeless styles for every occasion
-          </p>
-        </div>
+        {/* banner */}
+        <CategoryBanner category={category} />
       </div>
 
       {category === "Fashion" && (
         <div className="max-w-7xl mx-auto px-4 md:px-6 py-20">
-          
-         
+
+
           {renderSection("Men", fashionCategories.men)}
 
-          
+
           <div className="my-20 px-4">
             <div className="relative h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent">
               <div className="absolute left-1/2 top-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white px-4">
@@ -151,21 +132,21 @@ export default function CategoryFilter() {
             </div>
           </div>
 
-          
+
           {renderSection("Women", fashionCategories.women)}
         </div>
       )}
-      {category==="Beauty"&&(
-        <BeautySection/>
+      {category === "Beauty" && (
+        <BeautySection />
       )}
-      {category=="Accessories" && (
-        <AccessoriesSection/>
+      {category == "Accessories" && (
+        <AccessoriesSection />
       )}
-       {category=="Footwear" && (
-        <FootwearSection/>
+      {category == "Footwear" && (
+        <FootwearSection />
       )}
 
-      
+
       <div className="bg-gradient-to-r from-purple-600 to-pink-600 py-16 md:py-20 text-center">
         <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
           Can't Find What You're Looking For?
@@ -178,9 +159,9 @@ export default function CategoryFilter() {
         </button>
       </div>
 
-      
+
     </div>
 
-   
+
   );
 }

@@ -6,9 +6,11 @@ import {
   useRemoveCartItemMutation,
 } from "../features/cart/cart";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 export default function Cart() {
-  const { data: cartData, isLoading } = useGetCartQuery();
+  const { token } = useSelector((state) => state.auth)
+  const { data: cartData, isLoading } = useGetCartQuery(undefined, { skip: !token });
   const [updateCartItem] = useUpdateCartItemMutation();
   const [removeCartItem] = useRemoveCartItemMutation();
   const navigate = useNavigate();
@@ -16,6 +18,12 @@ export default function Cart() {
   const [cart, setCart] = useState([]);
 
   useEffect(() => {
+    if (!token) {
+      const localCart = JSON.parse(localStorage.getItem("cart")) || []
+      setCart(localCart)
+      console.log(localCart, "loval cart")
+      return
+    }
     if (!cartData?.items) return;
     const updatedCart = cartData.items.filter((item) => item.product);
     setCart(updatedCart);
@@ -23,12 +31,28 @@ export default function Cart() {
 
   const handleIncrease = async (item) => {
     const qty = item.quantity + 1;
+    if (!token) {
+      const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+      const updated = localCart.map((i) =>
+        i.productId === item.productId &&
+          JSON.stringify(i.variants) === JSON.stringify(item.variants)
+          ? { ...i, quantity: qty }
+          : i
+      );
+      localStorage.setItem("cart", JSON.stringify(updated));
+      setCart(updated);
+      return;
+    }
+
+    setCart((prev) =>
+      prev.map((i) => (i._id === item._id ? { ...i, quantity: qty } : i))
+    );
     setCart((prev) =>
       prev.map((i) => (i._id === item._id ? { ...i, quantity: qty } : i))
     );
 
     await updateCartItem({
-      id: item.product._id,
+      id: item.product?._id || item.productId,
       quantity: qty,
       variant: item.variant || {},
     });
@@ -37,6 +61,22 @@ export default function Cart() {
   const handleDecrease = async (item) => {
     if (item.quantity <= 1) return;
     const qty = item.quantity - 1;
+    if (!token) {
+      const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+      const updated = localCart.map((i) =>
+        i.productId === item.productId &&
+          JSON.stringify(i.variants) === JSON.stringify(item.variants)
+          ? { ...i, quantity: qty }
+          : i
+      );
+      localStorage.setItem("cart", JSON.stringify(updated));
+      setCart(updated);
+      return; // skip backend call
+    }
+
+    setCart((prev) =>
+      prev.map((i) => (i._id === item._id ? { ...i, quantity: qty } : i))
+    );
 
     setCart((prev) =>
       prev.map((i) => (i._id === item._id ? { ...i, quantity: qty } : i))
@@ -50,7 +90,22 @@ export default function Cart() {
   };
 
   const handleRemove = async (item) => {
-    setCart((prev) => prev.filter((i) => i._id !== item._id));
+    if (!token) {
+      // Guest → remove from localStorage
+      const localCart = JSON.parse(localStorage.getItem("cart")) || [];
+      const updatedCart = localCart.filter(
+        (i) =>
+          !(i.productId === item.productId &&
+            JSON.stringify(i.variants) === JSON.stringify(item.variants))
+      );
+      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      setCart(updatedCart);
+      return;
+    }
+
+    setCart((prev) =>
+      prev.filter((i) => i._id !== item._id)
+    );
 
     await removeCartItem({
       id: item.product._id,
@@ -62,13 +117,13 @@ export default function Cart() {
   const getItemImage = (item) => {
     // First try variantImages (stored in cart)
     if (item.variantImages?.length > 0) {
-      return item.variantImages[0].url;
+      return item.variantImages[0].url || item.images[0].url;
     }
 
     // Fallback to product main image
-    return item.product.images?.find((i) => i.isMain)?.url || 
-           item.product.images?.[0]?.url || 
-           "/placeholder.png";
+    return item.product?.images || item.images.find((i) => i.isMain)?.url ||
+      item.product?.images?.[0]?.url ||
+      item.images[0].url;
   };
 
   if (isLoading)
@@ -101,23 +156,23 @@ export default function Cart() {
           <div className="grid lg:grid-cols-3 gap-6">
             {/* Cart Items */}
             <div className="lg:col-span-2 space-y-4">
-              {cart.map((item) => (
+              {cart.map((item, key) => (
                 <div
-                  key={item._id}
+                  key={key}
                   className="bg-base-100 shadow-lg p-4 rounded-2xl flex flex-col sm:flex-row gap-4"
                 >
                   {/* Product Image */}
                   <div className="w-full sm:w-32 h-32 bg-base-200 rounded-xl overflow-hidden flex-shrink-0">
                     <img
-                      src={getItemImage(item)}
-                      alt={item.product.title}
+                      src={getItemImage(item) || "placeholfe.png"}
+                      alt={item.product?.title || "img"}
                       className="w-full h-full object-cover"
                     />
                   </div>
 
                   {/* Product Info */}
                   <div className="flex-1 space-y-2">
-                    <h2 className="text-lg font-bold">{item.product.title}</h2>
+                    <h2 className="text-lg font-bold">{item.product?.title || item.title}</h2>
 
                     {/* Variant Details */}
                     {item.variant && Object.keys(item.variant).length > 0 && (

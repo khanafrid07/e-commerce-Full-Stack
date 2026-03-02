@@ -8,13 +8,15 @@ import VariantSelector from "./detail/VariantSelector";
 import AddToCartSection from "./detail/AddToCartSection";
 import TrustBadges from "./detail/TrustBadges";
 import Reviews from "./detail/Reviews";
-import SuggesteedProduct from "./detail/SuggestedProduct";
+import SuggestedProduct from "./detail/SuggestedProduct";
 
-export default function ProductDetailCard({ data }) {
+export default function ProductDetailCard({ data , loading}) {
   console.log("review", data)
   if (!data) return null;
 
   const [addToCart, { isLoading }] = useAddToCartMutation();
+
+ 
 
   // Base Variant + Additional Variants
   const baseVariant = data.baseVariant || { typeValues: {}, price: data.basePrice, stock: data.stock };
@@ -169,6 +171,22 @@ export default function ProductDetailCard({ data }) {
     }
   };
 
+
+  useEffect(()=>{
+    let viewedItem = {
+      category: data.category.main,
+      gender: data.category.gender,
+      id: data._id,
+      viewedAt: Date.now()
+    }
+
+    let recentProducts = JSON.parse(localStorage.getItem("recentProducts")) || []
+    recentProducts = recentProducts.filter((p)=>p.id!==data._id)
+    recentProducts.unshift(viewedItem)
+    recentProducts = recentProducts.slice(0, 10);
+    localStorage.setItem("recentProducts", JSON.stringify(recentProducts))
+  }, [data])
+
   const finalPrice = price - (price * discount) / 100;
   const savings = price - finalPrice;
 
@@ -187,7 +205,7 @@ export default function ProductDetailCard({ data }) {
               discount={discount}
             />
             <TrustBadges />
-          <SuggesteedProduct/>
+          
           </div>
 
           {/* Right Side - Product Info */}
@@ -226,6 +244,7 @@ export default function ProductDetailCard({ data }) {
           </div>
           
         </div>
+          <SuggestedProduct product={data}/>
       </div>
     </div>
   );

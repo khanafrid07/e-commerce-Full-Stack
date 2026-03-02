@@ -3,6 +3,7 @@ import CategorySection from "../components/CategorySection";
 import FeaturedProduct from "../components/FeaturedProduct";
 import TrendingProducts from "../components/TrendingProducts";
 import NewArrivals from "../components/NewArrivals";
+import ViewedProduct from "../components/ViewedProduct";
 
 
 export default function Home(){
@@ -15,6 +16,7 @@ export default function Home(){
         <CategorySection/>
         <FeaturedProduct/>
         <TrendingProducts/>
+        <ViewedProduct/>
         <NewArrivals/>
         </>
     )

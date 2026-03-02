@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Link, useLocation } from "react-router-dom";
-import { Home, Package, PlusSquare, ShoppingBag } from "lucide-react";
+import { Home, Package, PlusSquare, ShoppingBag, Megaphone } from "lucide-react";
 
 export default function Sidebar({ isOpen }) {
   const location = useLocation();
@@ -10,6 +10,7 @@ export default function Sidebar({ isOpen }) {
     { path: "/dashboard/manage", label: "Manage Products", icon: Package },
     { path: "/dashboard/add", label: "Add Product", icon: PlusSquare },
     { path: "/dashboard/orders", label: "Orders", icon: ShoppingBag },
+     { path: "/dashboard/banners", label: "Banners", icon: Megaphone },
   ];
 
   const isActive = (path) => location.pathname === path;

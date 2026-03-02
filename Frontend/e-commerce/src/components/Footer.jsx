@@ -1,7 +1,7 @@
 export default function Footer(){
     return(
        
-            <div className="bg-gray-400 w-[100%] flex justify-between ">
+            <div className="bg-gray-400 w-[100%] flex justify-between sticky inset-0">
             <div>
                <ul>SHOP
                 <li>New Arrivals</li>

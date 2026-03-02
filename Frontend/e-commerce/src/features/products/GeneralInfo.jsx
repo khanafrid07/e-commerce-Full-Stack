@@ -10,9 +10,9 @@ export default function GeneralInfo({ formData, setFormData }) {
     Beauty: ["Skincare", "Makeup", "Fragrance", "Haircare"]
   };
   const attributes = {
-    Beauty:{skinType:['Dry', "Oily", "Sensitive","All Skin"], skinConcern:["Acne", "Dry skin", "Pigmentation", "Anti-aging", "Dark Spots"]},
-    Clothes: {fit:["Regular", "Straight", "Relaxed", "Oversized"], material: ["Fabric", "Cotton", "Woolen"]},
-    Footwear: {Size: ['38', '40','42', '44', '46']}
+    Beauty: { skinType: ['Dry', "Oily", "Sensitive", "All Skin"], skinConcern: ["Acne", "Dry skin", "Pigmentation", "Anti-aging", "Dark Spots"] },
+    Clothes: { fit: ["Regular", "Straight", "Relaxed", "Oversized"], material: ["Fabric", "Cotton", "Woolen"] },
+    Footwear: { Size: ['38', '40', '42', '44', '46'] }
   }
 
   const handleCategoryChange = (main) => {
@@ -56,10 +56,10 @@ export default function GeneralInfo({ formData, setFormData }) {
       }
     }));
   };
-  const  handleAttributeChange = (value)=>{
-    setFormData(prev=>({
+  const handleAttributeChange = (value) => {
+    setFormData(prev => ({
       ...prev,
-      attributes:{skinType:[...prev.attributes.skinType, value]}
+      attributes: { skinType: [...prev.attributes.skinType, value] }
     }))
 
   }
@@ -156,16 +156,27 @@ export default function GeneralInfo({ formData, setFormData }) {
             </select>
           </div>
         </div>
-       <label>Kug bhi</label>
-       
-       {formData?.category?.main && Object.entries(attributes[formData?.category?.main]).map((type, i)=>(
-        <div key={i}>
-          <label>{type[0]}</label>
-          {attributes[type[0]].map((value)=>(
-            <p>{value}</p>
-          ))}
-        </div>
-       ))}
+
+
+        {attributes[formData?.category?.main] &&
+          Object.entries(attributes[formData.category.main]).map(([attrName, values], i) => (
+            <div key={i} className="space-y-2">
+              <label className="font-semibold">{attrName}</label>
+
+              <div className="flex flex-wrap gap-2">
+                {values.map((value) => (
+                  <span
+                    key={value}
+                    className="px-3 py-1 rounded-full bg-gray-200 text-sm cursor-pointer hover:bg-gray-300"
+                  >
+                    {value}
+                  </span>
+                ))}
+              </div>
+            </div>
+          ))
+        }
+
 
       </div>
 

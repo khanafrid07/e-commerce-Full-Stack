@@ -44,7 +44,7 @@ const productSchema = new mongoose.Schema(
        skinType: {
       type: [String],
       enum: ["oily", "dry", "combination", "normal", "all skin"],
-      default: ["all skin"],
+      default: ["none"]
     },
       material: String,
       fit: String
@@ -85,5 +85,13 @@ const productSchema = new mongoose.Schema(
   
   { timestamps: true }
 );
+
+productSchema.index({
+  title: "text",
+  description: "text",
+  "category.main": "text",
+  "category.sub": "text",
+  "category.gender": "text"
+});
 
 module.exports = mongoose.model("Product", productSchema);
