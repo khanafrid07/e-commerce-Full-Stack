@@ -3,6 +3,7 @@ const router = express.Router();
 const verifyUser = require("../middlewares/verifyUser");
 const Order = require("../models/order");
 const Product = require("../models/product");
+const User = require("../models/user");
 
 // ✅ Get all orders of logged-in user
 router.get("/", verifyUser, async (req, res) => {
@@ -18,7 +19,31 @@ router.get("/", verifyUser, async (req, res) => {
   }
 });
 
-// ✅ Get single order by ID
+
+router.get("/stats", async(req, res)=>{
+    try{
+      const totalUser = await User.countDocuments()
+      console.log(totalUser, "tola user")
+        const totalOrders = await Order.countDocuments()
+        const pendingDelivery = await Order.countDocuments({$or: [{status:"Pending"}, {status:"Shipped"}]})
+        let last30day = new Date()
+        last30day.setDate(last30day.getDate()-30)
+        const Revenue30Days = await Order.aggregate([
+          {
+          $match: {createdAt: {$gte: last30day}}
+          },
+          {
+            $group:{_id:null, revenue: {$sum: "$totalPrice"}}
+
+          }
+
+    ])
+    res.status(200).json({totalOrders,totalUser, pendingDelivery, Revenue30Days:Revenue30Days[0]?.revenue || 0})
+    }catch(err){
+      res.status(500).json({message:"ERror getting stats", error:err?.message})
+    }
+})
+
 router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;

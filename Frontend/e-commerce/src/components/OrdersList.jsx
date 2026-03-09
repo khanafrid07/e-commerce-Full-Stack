@@ -1,19 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { useGetOrdersQuery } from "../features/orders/orderSlice";
-
-export default function OrdersList() {
+export default function OrdersList({data = []}) {
   const navigate = useNavigate();
-  const { data, isError, isLoading } = useGetOrdersQuery();
-
-  if (isLoading) return <p className="p-4 text-gray-500">Loading orders...</p>;
-  if (isError) return <p className="p-4 text-red-500">Failed to load orders.</p>;
-  if (!data?.length) return <p className="p-4 text-gray-500">No orders found.</p>;
+  
 
   return (
     <div className="p-5 bg-background text-text">
       <h2 className="text-2xl font-bold mb-5">All Orders</h2>
 
-      {/* Table layout for medium+ screens */}
       <div className="hidden md:block border border-gray-200 rounded-lg overflow-hidden shadow-sm bg-white">
         <div className="grid grid-cols-6 bg-gray-50 text-gray-700 font-semibold p-3 text-sm border-b text-center">
           <p>Order ID</p>

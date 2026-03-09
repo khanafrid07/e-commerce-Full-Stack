@@ -1,13 +1,26 @@
 import { motion } from "framer-motion";
 import hero from "../assets/hero.png";
 import useTypingEffect from "../hooks/useTypingEffect";
+import { useGetBannerQuery } from "../features/Banners/BannerSlice";
+import { Loader } from "lucide-react";
+
 export default function Hero() {
+   
+        const {data, isFetching, isLoading} = useGetBannerQuery({type: "hero"})
+
+        const activeBanner = data?.find((banner)=>banner.isActive)
+       
+        
+        
+  
 
      const text = useTypingEffect(
     ["Big Winter Sale Coming Soon!", "New Arrivals", "Limited Offers!"],
     120,
     800
+    
   );
+  
     return (
         <section className="relative w-full h-auto md:h-[80vh] bg-gray-200 overflow-hidden">
 
@@ -26,15 +39,17 @@ export default function Hero() {
                     transition={{ duration: 1 }}
                 >
                     <motion.img
-                        src={hero}
+                        src={activeBanner?.image?.url || hero}
                         alt="Hero"
                         className="object-contain max-h-[400px] md:h-full w-full"
                         whileHover={{ scale: 1.05 }}
                         transition={{ duration: 0.5 }}
+                        animate={{x:0, opacity:1}}
                     />
+                    {isLoading && <Loader/>}
                 </motion.div>
 
-                {/* Text Section */}
+                
                 <motion.div
                     className="flex flex-col justify-center px-8 py-12 text-center md:text-left order-2 md:order-1"
                     initial={{ y: 50, opacity: 0 }}
@@ -49,7 +64,7 @@ export default function Hero() {
                         animate={{ y: 0, opacity: 1 }}
                         transition={{ delay: 0.2, duration: 0.5 }}
                     >
-                       ✨New Season • 🔥New Style • Shop the Latest Trends
+                       ✨New Season • 🔥{activeBanner?.titleMiddle} • Shop the Latest Trends
                     </motion.p>
 
                     {/* Main Headline */}

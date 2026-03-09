@@ -2,10 +2,10 @@ import fashionBanner from "../../assets/bannerFashion.png";
 import beautyBanner from "../../assets/beautyBanner.png";
 import accessoriesBanner from "../../assets/accessoriesBanner.png";
 import footwearBanner from "../../assets/footwearBanner.webp";
-import { useCreateBannerMutation,  } from "./BannerSlice";
+import { useCreateBannerMutation } from "./BannerSlice";
 import { useState } from "react";
-import HeroBannerForm from "./HeroBannerForm";
-import CategoryBannerSection from "./CategoryBannerSection";
+import HeroBannerBuilder from "./HeroBannerBuilder";
+import CategoryBannerBuilder from "./CategoryBannerBuilder";
 import ToastNotification from "./ToastNotification";
 
 export default function Banner({ onFormSubmit }) {
@@ -170,19 +170,19 @@ export default function Banner({ onFormSubmit }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8">
+    <div className="min-h-screen bg-gradient-to-b from-white via-slate-50 to-slate-100 p-4 sm:p-6 md:p-8">
       {/* Header */}
-      <div className="mb-12">
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
+      <div className="mb-8 sm:mb-12 max-w-7xl mx-auto">
+        <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-gray-900 mb-2 sm:mb-3">
           Banner Creator
         </h1>
-        <p className="text-gray-600">
-          Create and manage stunning banners for your store
+        <p className="text-sm sm:text-base lg:text-lg text-gray-600">
+          Design and preview banners exactly as they'll appear to your customers
         </p>
       </div>
 
       {/* Toast Notifications */}
-      <div className="mb-6 space-y-3">
+      <div className="mb-6 sm:mb-8 max-w-7xl mx-auto space-y-2 sm:space-y-3">
         <ToastNotification
           type="success"
           message={showSuccess}
@@ -195,24 +195,42 @@ export default function Banner({ onFormSubmit }) {
         />
       </div>
 
-      {/* Hero Banner Section */}
-      <HeroBannerForm
-        heroData={heroData}
-        onInputChange={handleHeroInputChange}
-        onImageChange={handleHeroImageChange}
-        onSave={handleHeroSave}
-        isLoading={isLoading}
-      />
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto space-y-8 sm:space-y-12">
+        {/* Hero Banner Section */}
+        <HeroBannerBuilder
+          heroData={heroData}
+          onInputChange={handleHeroInputChange}
+          onImageChange={handleHeroImageChange}
+          onSave={handleHeroSave}
+          isLoading={isLoading}
+        />
 
-      {/* Category Banners Section */}
-      <CategoryBannerSection
-        categoryBanners={categoryBanners}
-        bannersInfo={bannersInfo}
-        onCategoryInputChange={handleCategoryInputChange}
-        onCategoryImageChange={handleCategoryImageChange}
-        onCategorySave={handleCategorySave}
-        isLoading={isLoading}
-      />
+        {/* Category Banners Section */}
+        <div>
+          <div className="mb-4 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">Category Banners</h2>
+            <p className="text-xs sm:text-sm text-gray-600">Create banners for each product category</p>
+          </div>
+
+          <div className="space-y-6 sm:space-y-8">
+            {categoryBanners.map((cat) => (
+              <CategoryBannerBuilder
+                key={cat.name}
+                category={cat.name}
+                bannerInfo={bannersInfo[cat.name]}
+                onInputChange={(field, value) =>
+                  handleCategoryInputChange(cat.name, field, value)
+                }
+                onImageChange={(file) => handleCategoryImageChange(cat.name, file)}
+                onSave={() => handleCategorySave(cat.name)}
+                isLoading={isLoading}
+                colorGradient={cat.color}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

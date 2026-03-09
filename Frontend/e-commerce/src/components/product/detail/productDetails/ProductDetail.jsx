@@ -8,7 +8,7 @@ import CartAndPrice from "./CartAndPrice"
 import Reviews from "../Reviews"
 
 export default function ProductDetail() {
-   
+
 
     const { id } = useParams()
     const { data, isLoading, isError } = useViewProductQuery(id)
@@ -62,6 +62,19 @@ export default function ProductDetail() {
             setAllVariant(finalVariant)
             console.log(finalVariant, "final")
         }
+        //recent product
+        let viewedItem = {
+            category: product?.category?.main,
+            gender: product?.category.gender,
+            id: product?._id,
+            viewedAt: Date.now()
+        }
+
+        let recentProducts = JSON.parse(localStorage.getItem("recentProducts")) || []
+        recentProducts = recentProducts.filter((p) => p.id !== product._id)
+        recentProducts.unshift(viewedItem)
+        recentProducts = recentProducts.slice(0, 10);
+        localStorage.setItem("recentProducts", JSON.stringify(recentProducts))
 
 
 
@@ -159,10 +172,10 @@ export default function ProductDetail() {
             <div>
 
                 <ProductInfo info={info} />
-              
-                <ProductVariants images = {images} info={info} noMatch={noMatch} availableOption={availableOption} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} allVariant={allVariant} />
-                <Reviews reviews={product.reviews}/>
-              
+
+                <ProductVariants images={images} info={info} noMatch={noMatch} availableOption={availableOption} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} allVariant={allVariant} />
+                <Reviews reviews={product.reviews} />
+
             </div>
 
         </div>

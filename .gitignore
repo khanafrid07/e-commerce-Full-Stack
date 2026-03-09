@@ -1,0 +1,6 @@
+.env
+Backend/.env
+node_modules
+Frontend/e-commerce/node_modules
+Backend/node_modules
+cd 

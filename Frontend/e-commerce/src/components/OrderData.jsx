@@ -1,58 +1,67 @@
+import { useMemo } from "react";
 import { useGetOrdersQuery } from "../features/orders/orderSlice";
+import ProductStats from "../features/products/components/ProductsStats";
+import { Box, PackageOpen, Truck, Vault } from "lucide-react";
 
 export default function OrderData() {
+
   const { data: orders = [], isLoading, isError } = useGetOrdersQuery();
 
+  
+  const orderStatus = useMemo(() => {
+
+    let pending = 0;
+    let delivered = 0;
+    let cancelled = 0;
+
+    orders.forEach(order => {
+      const status = order.status?.toLowerCase();
+
+      if (status === "pending") pending++;
+      else if (status === "delivered") delivered++;
+      else if (status === "cancelled") cancelled++;
+    });
+
+    return [
+      {
+        name: "Total Orders",
+        count: orders.length,
+        bgColor: "bg-gray-200",
+        icon: <Box size={50} color="blue" />
+      },
+      {
+        name: "Pending Orders",
+        count: pending,
+        bgColor: "bg-yellow-200",
+        icon: <Truck size={50} color="orange" />
+      },
+      {
+        name: "Completed Orders",
+        count: delivered,
+        bgColor: "bg-green-200",
+        icon: <PackageOpen size={50} color="green" />
+      },
+      {
+        name: "Cancelled Orders",
+        count: cancelled,
+        bgColor: "bg-red-200",
+        icon: <Vault size={50} color="red" />
+      }
+    ];
+
+  }, [orders]);
   if (isLoading) return <p className="p-4 text-gray-500">Loading orders...</p>;
   if (isError) return <p className="p-4 text-red-500">Failed to load orders.</p>;
 
-  const getOrdersByStatus = (status) =>
-    orders.filter(
-      (order) => order.status?.toLowerCase() === status.toLowerCase()
-    );
-
-  const pendingOrders = getOrdersByStatus("Pending");
-  const deliveredOrders = getOrdersByStatus("Delivered");
-  const cancelledOrders = getOrdersByStatus("Cancelled");
 
   return (
     <div className="p-4">
       <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
 
-      {/* 👇 Responsive grid: 2 cards per row on mobile, 4 on large */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Total Orders */}
-        <div className="p-3 sm:p-4 bg-gray-100 rounded-xl shadow-md flex flex-col items-center">
-          <h3 className="font-medium text-sm sm:text-base">Total Orders</h3>
-          <p className="text-lg sm:text-xl font-bold mt-1">
-            {orders.length || "N/A"}
-          </p>
-        </div>
-
-        {/* Pending Orders */}
-        <div className="p-3 sm:p-4 bg-yellow-100 rounded-xl shadow-md flex flex-col items-center">
-          <h3 className="font-medium text-sm sm:text-base">Pending Orders</h3>
-          <p className="text-lg sm:text-xl font-bold mt-1">
-            {pendingOrders.length || "N/A"}
-          </p>
-        </div>
-
-        {/* Completed Orders */}
-        <div className="p-3 sm:p-4 bg-green-100 rounded-xl shadow-md flex flex-col items-center">
-          <h3 className="font-medium text-sm sm:text-base">Completed Orders</h3>
-          <p className="text-lg sm:text-xl font-bold mt-1">
-            {deliveredOrders.length || "N/A"}
-          </p>
-        </div>
-
-        {/* Cancelled Orders */}
-        <div className="p-3 sm:p-4 bg-red-100 rounded-xl shadow-md flex flex-col items-center">
-          <h3 className="font-medium text-sm sm:text-base">Cancelled Orders</h3>
-          <p className="text-lg sm:text-xl font-bold mt-1">
-            {cancelledOrders.length || "N/A"}
-          </p>
-        </div>
+      <div className="grid grid-cols-2 gap-4 w-full sm:grid-cols-4">
+        <ProductStats productStats={orderStatus} />
       </div>
+
     </div>
   );
 }

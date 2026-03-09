@@ -52,10 +52,14 @@ export const orderApi = createApi({
                 
             }),
             invalidatesTags: ["orders"]
+        }),
+        getOrderStats: builder.query({
+            query:()=>"/orders/stats",
+            providesTags:["orders"]
         })
         
     })
    
 })
 
-export const {useCreateOrderMutation, useDeleteOrderMutation, useGetOrdersQuery, useSingleOrderQuery, useUpdateOrderMutation, useCancelOrderMutation} = orderApi
+export const {useGetOrderStatsQuery,useCreateOrderMutation, useDeleteOrderMutation, useGetOrdersQuery, useSingleOrderQuery, useUpdateOrderMutation, useCancelOrderMutation} = orderApi

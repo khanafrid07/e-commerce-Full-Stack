@@ -14,7 +14,10 @@ export const bannerApi = createApi({
     tagTypes:["banners"],
     endpoints:(builder)=>({
         getBanner: builder.query({
-            query: ()=>"/banners",
+            query:({type, category}={})=>({
+                url:`/banners?type=${type}&category=${category}`,
+                method: "GET",
+            }),
             providesTags:["banners"]
         }),
         createBanner: builder.mutation({

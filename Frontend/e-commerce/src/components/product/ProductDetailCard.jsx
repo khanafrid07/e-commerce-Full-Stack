@@ -186,9 +186,10 @@ export default function ProductDetailCard({ data , loading}) {
     recentProducts = recentProducts.slice(0, 10);
     localStorage.setItem("recentProducts", JSON.stringify(recentProducts))
   }, [data])
+  console.log("recetn product", recentProducts)
 
   const finalPrice = price - (price * discount) / 100;
-  const savings = price - finalPrice;
+  const savings = price - finalPrice; 
 
   return (
     <div className="w-full min-h-screen bg-gradient-to-br from-base-200 to-base-300 py-4 sm:py-8 px-4">
