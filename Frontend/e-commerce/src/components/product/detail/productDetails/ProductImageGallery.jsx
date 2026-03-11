@@ -14,9 +14,9 @@ export default function ProductImageGallery({ images }) {
 
     return (
         <div>
-            <div className="md:grid grid-cols-2 gap-4 hidden">
+            <div className="md:grid grid-cols-2 gap-4 hidden border rounded-sm">
                 {images?.map((img, idx) => (
-                    <img key={idx} className="object-cover" src={img?.url} />
+                    <img key={idx} className="object-cover w-full h-full" src={img?.url} />
                 ))}
             </div>
             <div className="md:hidden border rounded-lg shadow-lg space-y-4">

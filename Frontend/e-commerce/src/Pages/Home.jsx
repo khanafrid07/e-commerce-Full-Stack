@@ -1,10 +1,12 @@
 import Hero from "../components/Hero";
+import PromotionalBanner from "../components/PromotionalBanner";
 import CategorySection from "../components/CategorySection";
 import FeaturedProduct from "../components/FeaturedProduct";
 import TrendingProducts from "../components/TrendingProducts";
 import NewArrivals from "../components/NewArrivals";
 import ViewedProduct from "../components/ViewedProduct";
-
+import DiscoverCollections from "../components/DiscoverCollection";
+import FashionCollection from "../components/FashionCollection";
 
 export default function Home(){
 
@@ -13,11 +15,15 @@ export default function Home(){
         <>
         
         <Hero/>
+        {/* <PromotionalBanner/> */}
         <CategorySection/>
         <FeaturedProduct/>
-        <TrendingProducts/>
-        <ViewedProduct/>
+        <DiscoverCollections/>
         <NewArrivals/>
+        <FashionCollection/>
+        {/* <TrendingProducts/> */}
+        <ViewedProduct/>
+        
         </>
     )
 }

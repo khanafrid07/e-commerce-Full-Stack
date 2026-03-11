@@ -71,7 +71,7 @@ export default function ProductDetail() {
         }
 
         let recentProducts = JSON.parse(localStorage.getItem("recentProducts")) || []
-        recentProducts = recentProducts.filter((p) => p.id !== product._id)
+        recentProducts = recentProducts.filter((p) => p.id !== product?._id)
         recentProducts.unshift(viewedItem)
         recentProducts = recentProducts.slice(0, 10);
         localStorage.setItem("recentProducts", JSON.stringify(recentProducts))
