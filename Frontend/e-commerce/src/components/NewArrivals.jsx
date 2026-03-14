@@ -35,22 +35,21 @@ export default function NewArrivals() {
 
   return (
     <section className="relative overflow-hidden">
-      {/* Background with gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 -z-10" />
+      
 
-      {/* Decorative blob elements */}
-      <div className="absolute top-20 left-0 w-96 h-96 bg-orange-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-blob" />
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-blob animation-delay-4000" />
-
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 md:px-8 ">
+      
+      <div className="max-w-9xl mx-auto px-4  sm:px-6 md:px-8 ">
         {/* Header Section */}
-        <div className=" mb-4">
-          <div className="inline-flex   gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full mb-4 font-semibold text-sm">
+
+        {/* Products Container */}
+        <div className="relative  overflow-hidden transition-all duration-300 hover:shadow-2xl">
+        <div className="  text-center">
+          <div className="inline-flex   gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full  font-semibold text-sm">
             <Sparkles size={18} />
             Just Arrived
           </div>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent mb-2">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-red-600  to-orange-600 bg-clip-text text-transparent ">
             New Arrivals
           </h2>
 
@@ -58,9 +57,6 @@ export default function NewArrivals() {
             Discover the latest additions to our collection. Fresh styles and exclusive items just for you
           </p> */}
         </div>
-
-        {/* Products Container */}
-        <div className="relative bg-gradient-to-br from-white via-orange-50 to-amber-50 rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl border border-orange-100/50">
           {/* Background decorative elements */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-orange-200/30 to-transparent rounded-full blur-3xl -z-5" />
           <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-yellow-200/20 to-transparent rounded-full blur-3xl -z-5" />

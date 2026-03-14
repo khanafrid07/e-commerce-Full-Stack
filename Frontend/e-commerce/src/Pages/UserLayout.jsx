@@ -5,8 +5,11 @@ import { Outlet } from "react-router-dom";
 export default function UserLayout() {
   return (
     <>
+    <nav className="overflow-hidden">
+
       <Navbar />
-      <main className="p-6">
+    </nav>
+      <main className="overflow-y-hidden py-2">
         <Outlet />
       </main>
       <footer className="w-[100%]">

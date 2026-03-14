@@ -56,7 +56,7 @@ export default function CategorySection() {
         </motion.div>
 
         <motion.div
-          className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6"
+          className="grid grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6"
           variants={containerVariants}
           initial="hidden"
           whileInView="visible"
@@ -72,7 +72,7 @@ export default function CategorySection() {
                 onClick={() => navigate(`/category/${cat.label}`)}
                 className="group cursor-pointer"
               >
-                <div className="relative h-48 sm:h-56 md:h-64 lg:h-80 rounded-xl sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl hover:shadow-2xl transition-all duration-500">
+                <div className="relative h-32 sm:h-56 md:h-64 lg:h-80 rounded-lg sm:rounded-2xl overflow-hidden shadow-lg sm:shadow-xl hover:shadow-2xl transition-all duration-500">
                   <img
                     src={cat.img}
                     alt={cat.label}
@@ -85,7 +85,7 @@ export default function CategorySection() {
 
                   <div className="absolute inset-0 flex flex-col items-center justify-end p-3 sm:p-4 md:p-5 lg:p-6 z-10">
                     <div className={`mb-2 sm:mb-3 bg-gradient-to-br ${cat.color} p-2 sm:p-2.5 md:p-3 rounded-full transition-transform duration-500 group-hover:scale-110 group-hover:rotate-12`}>
-                      <Icon  size={20} className="w-5 text-white h-5 sm:w-6 sm:h-6" />
+                      <Icon  size={20} className="w-4 text-white h-4 sm:w-6 sm:h-6" />
                     </div>
 
                     <h3 className="text-white text-sm sm:text-base md:text-lg lg:text-2xl font-black text-center mb-1 sm:mb-2 group-hover:scale-110 transition-transform duration-500">

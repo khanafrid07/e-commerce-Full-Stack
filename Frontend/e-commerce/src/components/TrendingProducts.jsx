@@ -42,7 +42,7 @@ export default function TrendingProducts() {
       <div className="absolute top-20 left-0 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-blob" />
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-indigo-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-blob animation-delay-4000" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-16">
+      <div className="max-w-9xl mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-16">
         {/* Header Section */}
         <div className="text-center mb-8 md:mb-12">
           <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full mb-4 font-semibold text-sm">

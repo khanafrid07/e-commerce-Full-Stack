@@ -17,11 +17,12 @@ export default function Home(){
         <Hero/>
         {/* <PromotionalBanner/> */}
         <CategorySection/>
-        <FeaturedProduct/>
-        <DiscoverCollections/>
+        {/* <FeaturedProduct/> */}
         <NewArrivals/>
         <FashionCollection/>
-        {/* <TrendingProducts/> */}
+        <DiscoverCollections/>
+        
+        <TrendingProducts/>
         <ViewedProduct/>
         
         </>
