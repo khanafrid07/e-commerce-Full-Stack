@@ -14,15 +14,15 @@ export default function LandingCard({
 
   const toggleLike = (id) => {
     setLiked((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
+  }
 
   const productList = products && products.length > 0 ? products : product ? [product] : [];
 
   const getBadge = () => {
     if (featured)
-      return { icon: Star, label: "Featured", color: "from-amber-400 to-amber-500", textColor: "text-white" };
+      return { icon: Star, label: "Featured", color: "from-amber-400 to-amber-500", textColor:"text-white" };
     if (trending)
-      return { icon: Zap, label: "Trending", color: "from-purple-500 to-pink-500", textColor: "text-white" };
+      return { icon: Zap, label: "Trending", color: "from-purple-500 to-pink-500", textColor:"text-white" };
     if (newArrival)
       return { icon: Tags, label: "New", color: "from-pink-400 to-rose-500", textColor: "text-white" };
     return null;
