@@ -7,6 +7,7 @@ import NewArrivals from "../components/NewArrivals";
 import ViewedProduct from "../components/ViewedProduct";
 import DiscoverCollections from "../components/DiscoverCollection";
 import FashionCollection from "../components/FashionCollection";
+import OfferSignup from "../components/OfferSignup";
 
 export default function Home(){
 
@@ -20,10 +21,12 @@ export default function Home(){
         {/* <FeaturedProduct/> */}
         <NewArrivals/>
         <FashionCollection/>
-        <DiscoverCollections/>
+        {/* <DiscoverCollections/> */}
+        <PromotionalBanner/>
         
         <TrendingProducts/>
         <ViewedProduct/>
+        <OfferSignup/>
         
         </>
     )

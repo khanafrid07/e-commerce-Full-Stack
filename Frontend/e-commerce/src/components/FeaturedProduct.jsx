@@ -3,9 +3,9 @@ import LandingCard from "./product/LandingCard.jsx";
 import { useEffect, useState, useRef } from "react";
 import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
-export default function FeaturedProduct() {
+export default function FeaturedProduct({ category }) {
   const [group, setGroup] = useState(0);
-  const { data, isLoading, isError } = useGetProductsQuery({ sort: "featured", limit: 12 });
+  const { data, isLoading, isError } = useGetProductsQuery({ sort: "featured", limit: 12, category });
   const allProducts = data?.allProducts || [];
 
   let groupSize = 2;
@@ -67,41 +67,22 @@ export default function FeaturedProduct() {
 
   return (
     <section className="relative overflow-hidden">
-      {/* Background with gradient */}
-      <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 -z-10" />
 
-      {/* Decorative elements */}
-      <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-blob" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-20 -z-10 animate-blob animation-delay-2000" />
 
-      <div className="max-w-9xl mx-auto px-4 sm:px-6 md:px-8 py-12 md:py-16">
-        {/* Header Section */}
-     
+      <div className="max-w-9xl mx-auto px-2">
 
-        {/* Carousel Container */}
         <div className="relative group">
-          
+
           {/* Main carousel */}
           <div
-            className="bg-gradient-to-r from-blue-200 to-pink-200 rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl"
+            className=" rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl"
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
-               <div className="text-center ">
-          <div className="inline-flex items-center gap-2 bg-purple-100 text-purple-700 px-4 py-2 rounded-full mt-3 font-semibold text-sm">
-            <Sparkles size={18} />
-            Curated Selection
-          </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-clip-text text-transparent mb-2">
-            Featured Products
-          </h2>
-          <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto">
-            Discover our handpicked collection of premium products selected just for you
-          </p>
-        </div>
+
             <div className="p-4 sm:p-6 md:p-6 lg:p-8">
-              <motion.div initial={{opacity:0, y:50}} whileInView={{opacity:1, y:0}} transition={{duration:1.3}}>
-              <LandingCard featured products={visibleProduct} />
+              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 1.3 }}>
+                <LandingCard featured products={visibleProduct} />
 
               </motion.div>
             </div>
@@ -131,11 +112,10 @@ export default function FeaturedProduct() {
             <button
               key={index}
               onClick={() => setGroup(index)}
-              className={`transition-all duration-300 rounded-full ${
-                index === group
+              className={`transition-all duration-300 rounded-full ${index === group
                   ? "bg-gradient-to-r from-purple-600 to-pink-600 w-8 h-3"
                   : "bg-gray-300 hover:bg-gray-400 w-3 h-3"
-              }`}
+                }`}
               aria-label={`Go to product ${index + 1}`}
             />
           ))}

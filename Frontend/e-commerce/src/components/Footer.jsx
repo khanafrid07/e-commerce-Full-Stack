@@ -1,21 +1,21 @@
-export default function Footer(){
-    return(
-       
-            <div className="bg-gray-400 w-[100%] flex justify-between sticky inset-0">
+export default function Footer() {
+    return (
+
+        <div className="bg-gray-400 w-full flex justify-between py-8 px-6 mt-8">
             <div>
-               <ul>SHOP
-                <li>New Arrivals</li>
-                <li>Collections</li>
-                <li>Accessories</li>
-                <li>Shoes</li>
-               </ul>
+                <ul>SHOP
+                    <li>New Arrivals</li>
+                    <li>Collections</li>
+                    <li>Accessories</li>
+                    <li>Shoes</li>
+                </ul>
             </div>
             <div>
                 <ul>CATEGORIES
-                <li>Fashion</li>
-                <li>Beauty</li>
-                <li>Accessories</li>
-                <li>Shoes</li>
+                    <li>Fashion</li>
+                    <li>Beauty</li>
+                    <li>Accessories</li>
+                    <li>Shoes</li>
                 </ul>
 
             </div>
@@ -28,11 +28,11 @@ export default function Footer(){
                 </ul>
             </div>
             <div>
-               <div>CONNECT WITH US</div>
+                <div>CONNECT WITH US</div>
             </div>
         </div>
 
-    
-        
+
+
     )
 }

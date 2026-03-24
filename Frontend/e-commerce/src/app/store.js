@@ -4,17 +4,19 @@ import { ProductApi } from '../features/products/productSlice.js';
 import { orderApi } from '../features/orders/orderSlice.js';
 import { cartApi } from '../features/cart/cart.js';
 import { reviewApi } from '../components/product/detail/reviewSlice.js';
-import {bannerApi} from "../features/Banners/BannerSlice.js"
+import { bannerApi } from "../features/Banners/BannerSlice.js"
 import { dashboardApi } from '../features/Dashboard/dashboardSlice.js';
+import { categoryApi } from "../features/Banners/categorySlice.js"
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     [ProductApi.reducerPath]: ProductApi.reducer,
     [orderApi.reducerPath]: orderApi.reducer,
     [cartApi.reducerPath]: cartApi.reducer,
-    [reviewApi.reducerPath]:reviewApi.reducer,
-    [bannerApi.reducerPath]:bannerApi.reducer,
-    [dashboardApi.reducerPath]:dashboardApi.reducer
+    [reviewApi.reducerPath]: reviewApi.reducer,
+    [bannerApi.reducerPath]: bannerApi.reducer,
+    [dashboardApi.reducerPath]: dashboardApi.reducer,
+    [categoryApi.reducerPath]: categoryApi.reducer
   },
   middleware: (getDefaultMiddleware) => (
     getDefaultMiddleware()
@@ -24,5 +26,6 @@ export const store = configureStore({
       .concat(reviewApi.middleware)
       .concat(bannerApi.middleware)
       .concat(dashboardApi.middleware)
+      .concat(categoryApi.middleware)
   ),
 });

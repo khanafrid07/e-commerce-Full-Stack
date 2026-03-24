@@ -10,7 +10,7 @@ router.get("/", async (req, res) => {
   try {
     const {
       sort,
-      limit ,
+      limit,
       category,
       categories,
       sub,
@@ -18,6 +18,7 @@ router.get("/", async (req, res) => {
       gender,
       search
     } = req.query;
+    console.log("gnder", gender)
 
     const capitalize = (str) => {
       if (!str) return null;
@@ -73,6 +74,7 @@ router.get("/", async (req, res) => {
 
     if (search) {
       filter = {
+        ...filter,
         $text: { $search: search }
       }
     }
@@ -81,7 +83,10 @@ router.get("/", async (req, res) => {
       .sort(sortQuery)
       .limit(Number(limit));
 
-  
+    if (!allProducts.length) {
+      return res.status(404).json({ message: "No Products Found!" });
+    }
+    console.log(allProducts, "product")
     return res.status(200).json({ allProducts });
 
   } catch (err) {
@@ -99,7 +104,7 @@ router.get("/:id", async (req, res) => {
   try {
     const { id } = req.params;
     const product = await Product.findById(id).populate("reviews");
-    if (!product) return res.status(404).json({ message: "Product Not Found!" });
+    if (!product) return res.status(404).json({ message: "Product Not Found!", error: err.message });
     res.status(200).json({ product });
   } catch (err) {
     res.status(500).json({ message: "Error fetching product", error: err.message }); 8

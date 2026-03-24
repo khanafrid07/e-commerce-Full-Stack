@@ -20,9 +20,9 @@ export default function LandingCard({
 
   const getBadge = () => {
     if (featured)
-      return { icon: Star, label: "Featured", color: "from-amber-400 to-amber-500", textColor:"text-white" };
+      return { icon: Star, label: "Featured", color: "from-amber-400 to-amber-500", textColor: "text-white" };
     if (trending)
-      return { icon: Zap, label: "Trending", color: "from-purple-500 to-pink-500", textColor:"text-white" };
+      return { icon: Zap, label: "Trending", color: "from-purple-500 to-pink-500", textColor: "text-white" };
     if (newArrival)
       return { icon: Tags, label: "New", color: "from-pink-400 to-rose-500", textColor: "text-white" };
     return null;
@@ -34,16 +34,16 @@ export default function LandingCard({
   return (
     <div className="w-full">
       {productList.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-4 md:gap-5 lg:gap-6">
+        <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {productList.map((product) => (
             <div
               key={product._id}
               onClick={() => navigate(`/products/${product._id}`)}
-              className="group relative bg-white rounded-2xl overflow-hidden border border-gray-100 transition-all duration-300  hover:shadow-2xl cursor-pointer"
+              className="group relative flex flex-col bg-white  overflow-hidden border border-gray-100 transition-all duration-300 hover:shadow-xl hover:-translate-y-0.5 cursor-pointer"
             >
-              {/* Image */}
-              <div className="relative w-full aspect-[3/4] sm:aspect-[4/5] md:aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
-                
+              {/* Square image area */}
+              <div className="relative w-full aspect-square overflow-hidden bg-gradient-to-br from-gray-50 to-gray-100">
+
                 <img
                   src={product.images?.[0]?.url || "https://via.placeholder.com/300"}
                   alt={product.title}
@@ -80,31 +80,25 @@ export default function LandingCard({
                   title="Add to wishlist"
                 >
                   <Heart
-                    className={`w-[1rem] h-[1rem] transition-all ${
-                      liked[product._id] ? "fill-red-500 text-red-500 scale-125" : "text-gray-600 hover:text-red-500"
-                    }`}
+                    className={`w-[1rem] h-[1rem] transition-all ${liked[product._id] ? "fill-red-500 text-red-500 scale-125" : "text-gray-600 hover:text-red-500"
+                      }`}
                   />
                 </button>
 
-                
+
               </div>
 
-              {/* Content */}
-              <div className="p-3 flex flex-col gap-1">
-                <h3 className="font-bold text-sm sm:text-base text-gray-900 line-clamp-2 group-hover:text-purple-600 transition-colors duration-200">
+              {/* Compact info strip */}
+              <div className="px-2.5 py-2 flex flex-col gap-0.5">
+                <h3 className="font-semibold text-xs text-gray-900 line-clamp-1 group-hover:text-purple-600 transition-colors duration-200">
                   {product.title}
                 </h3>
-                <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
-                  <Sparkles size={12} />
-                  {product.category?.main || "Premium"}
-                </p>
-
                 {/* Price */}
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="text-base sm:text-xl md:text-2xl font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                <div className="flex items-baseline gap-1.5">
+                  <span className="text-sm font-black bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                     ₹{product.basePrice}
                   </span>
-                  <span className="text-xs sm:text-sm text-gray-400 line-through">
+                  <span className="text-xs text-gray-400 line-through">
                     ₹{Math.round(product.basePrice * 1.3)}
                   </span>
                 </div>

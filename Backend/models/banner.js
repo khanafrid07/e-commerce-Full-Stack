@@ -1,56 +1,54 @@
 const mongoose = require("mongoose")
 
-const bannerSchema = new mongoose.Schema(
-  {
-    type: {
-      type: String,
-      enum: ["hero", "category"],
-      required: true,
-    },
+const bannerSchema = new mongoose.Schema({
+  title: String,
 
-    category: {
-      type: String, 
-      default: null,
-    },
+  image: String,
 
-    titleTop: {
-      type: String,
-    },
 
-    titleMiddle: {
-      type: String,
-    },
+  heading: String,
+  subHeading: String,
 
-    titleBottom: {
-      type: String,
-    },
+  ctaText: String,
+  ctaLink: String,
 
-    image: {
-      url: { type: String },
-      public_id: { type: String },
-    },
-
-    link: {
-      type: String,
-    },
-
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-
-    // position: {
-    //   type: String,
-    //   enum: ["home_top", "home_middle", "home_bottom"],
-    //   default: "home_top",
-    // },
-
-    priority: {
-      type: Number,
-      default: 0,
-    },
+  type: {
+    type: String,
+    enum: ["hero", "category", "promo"]
   },
-  { timestamps: true }
-);
 
-module.exports =  mongoose.model("Banner", bannerSchema);
+  categoryId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Category"
+  },
+
+  placement: {
+    type: String,
+    enum: ["home_top", "home_middle", "home_bottom"],
+    default: "home_top"
+  },
+
+  position: {
+    type: String,
+    enum: ["left", "center", "right"],
+    default: "left"
+  },
+
+  vertical: {
+    type: String,
+    enum: ["top", "center", "bottom"],
+    default: "center"
+  },
+
+  priority: Number,
+
+  startDate: Date,
+  endDate: Date,
+
+  isActive: {
+    type: Boolean,
+    default: true
+  }
+});
+const Banner = mongoose.model("Banner", bannerSchema);
+module.exports = Banner

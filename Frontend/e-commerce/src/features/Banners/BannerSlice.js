@@ -11,34 +11,39 @@ export const bannerApi = createApi({
             return headers
         }
     }),
-    tagTypes:["banners"],
-    endpoints:(builder)=>({
+    tagTypes: ["banners"],
+    endpoints: (builder) => ({
         getBanner: builder.query({
-            query:({type, category}={})=>({
-                url:`/banners?type=${type}&category=${category}`,
-                method: "GET",
-            }),
-            providesTags:["banners"]
+            query: ({ type, categoryId, isAdmin } = {}) => {
+                let query = "/banners?";
+
+                if (type) query += `type=${type}&`;
+                if (categoryId) query += `categoryId=${categoryId}&`;
+                if (isAdmin) query += `isAdmin=${isAdmin}&`;
+
+                return { url: query };
+            },
+            providesTags: ["banners"]
         }),
         createBanner: builder.mutation({
-            query: (formData)=>({
+            query: (formData) => ({
                 url: "/banners",
                 body: formData,
                 method: "POST"
             }),
             invalidatesTags: ["banners"]
-            
+
         }),
         updateBannerStatus: builder.mutation({
-            query: ({id, isActive})=>({
+            query: ({ id, isActive }) => ({
                 url: `/banners/${id}`,
                 method: "PUT",
-                body: {isActive}
+                body: { isActive }
             }),
             invalidatesTags: ["banners"]
         }),
         deleteBanner: builder.mutation({
-            query: (id)=>({
+            query: (id) => ({
                 url: `/banners/${id}`,
                 method: "DELETE"
             }),
@@ -47,4 +52,4 @@ export const bannerApi = createApi({
     })
 })
 
-export const{useGetBannerQuery, useCreateBannerMutation, useUpdateBannerStatusMutation, useDeleteBannerMutation} = bannerApi
+export const { useGetBannerQuery, useCreateBannerMutation, useUpdateBannerStatusMutation, useDeleteBannerMutation } = bannerApi

@@ -2,10 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { fetchUser } from "./features/auth/authSlice";
-import ProductListing from "./components/product/Cateogry/ProductListing";
-import UserLayout from "./Pages/UserLayout"; 
-import ProductList from "./features/products/ProductList";
-// import ProductDetail from "./features/products/ProductDetail";
+import UserLayout from "./Pages/UserLayout";
 import Cart from "./components/Cart";
 import Checkout from "./Pages/Checkout";
 import Payment from "./Pages/Payment";
@@ -22,9 +19,11 @@ import UpdateProduct from "./features/products/UpdateProduct";
 import Home from "./Pages/Home";
 import CategoryFilter from "./components/product/Cateogry/CateogryFilter";
 import ProductDetail from "./components/product/detail/productDetails/ProductDetail";
+import ProductListing from "./components/product/ProductListing";
 import ProtectedRoute from "./components/ProtectedRote"
-import BannerManagement from "./features/Banners/BannerManagement";
-import {Elements} from "@stripe/react-stripe-js"
+import Banner from "./features/Banners/Banner";
+import BannerForm from "./features/Banners/components/BannerForm";
+import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js";
 
 const stripePromise = loadStripe("pk_test_51QlWeFQemhG2QfvsGG1PqGASRwoKpb3CV9iBeVeHpYYiDiXApNSn2i9YiHUU3XiLRb7QPXem90utPmVVJ5f0Ewoh00shYEBk3E")
@@ -42,24 +41,23 @@ function AppContent() {
       <Route element={<UserLayout />}>
         <Route index element={<Home />} />
 
-        <Route path="category/:category" element={<CategoryFilter/>}/>
+        <Route path="category/:category" element={<CategoryFilter />} />
         <Route path="products" element={<ProductListing />} />
         <Route path="products/:id" element={<ProductDetail />} />
         <Route path="cart" element={<Cart />} />
         <Route path="checkout" element={<Checkout />} />
         <Route path="payment" element={<Elements stripe={stripePromise}>
-          <Payment/>
+          <Payment />
 
         </Elements>} />
         <Route path="orders" element={<Order />} />
         <Route path="orders/:id" element={<OrderDetails />} />
-          <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
       </Route>
 
 
-      {/* Auth */}
-    
+
 
       {/* Dashboard */}
       <Route path="/dashboard" element={<ProtectedRoute><DashboardLayout /></ProtectedRoute>}>
@@ -69,7 +67,8 @@ function AppContent() {
         <Route path="update-product/:id" element={<UpdateProduct />} />
         <Route path="orders" element={<AdminOrder />} />
         <Route path="orders/:id" element={<OrderDetails />} />
-        <Route path="banners" element = {<BannerManagement/>}/>
+        <Route path="banners" element={<Banner />} />
+        <Route path="banners/create" element={<BannerForm />} />
       </Route>
     </Routes>
   );
