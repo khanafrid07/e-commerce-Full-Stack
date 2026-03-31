@@ -1,121 +1,482 @@
-
-import { useState } from "react"
+import React, { useState, useEffect } from "react";
+import { useCreateBannerMutation, useUpdateBannerMutation } from "../BannerSlice";
 import BannerPreview from "./BannerPreview";
-import BannerInputs from "./BannerInputs"
-import { useCreateBannerMutation } from "../BannerSlice";
-export default function BannerForm() {
-    const [createBanner, { isLoading }] = useCreateBannerMutation()
-    const [form, setForm] = useState({
-        title: "",
-        heading: "",
-        subHeading: "",
-        ctaText: "",
-        ctaLink: "",
-        type: "hero",
-        placement: "home_top",
-        position: "left",
-        vertical: "center",
-        isActive: true,
 
-        image: null,
-        imageUrl: "",
-    });
+const BANNER_TYPES = [
+  { value: "hero", label: "Hero Banner" },
+  { value: "promo", label: "Promo Banner" },
+  { value: "category", label: "Category Banner" },
+];
 
+const PLACEMENTS = [
+  { value: "home_top", label: "Home - Top" },
+  { value: "home_middle", label: "Home - Middle" },
+  { value: "home_bottom", label: "Home - Bottom" },
+];
 
+const TEMPLATES = [
+  { value: "none", label: "None" },
+  { value: "light-overlay", label: "Light Overlay" },
+  { value: "dark-overlay", label: "Dark Overlay" },
+  { value: "left-dark", label: "Left Dark" },
+  { value: "center-light", label: "Center Light" },
+  { value: "overlay-gradient", label: "Overlay Gradient" },
+  { value: "gradient-right", label: "Gradient Right" },
+  { value: "card-overlay", label: "Card Overlay" },
+  { value: "minimal", label: "Minimal" },
+];
 
-    const horizontalMap = {
-        left: "items-start text-left",
-        center: "items-center text-center",
-        right: "items-end text-right",
-    };
+const TEXT_COLORS = [
+  { value: "white", label: "White" },
+  { value: "dark", label: "Dark" },
+  { value: "gray", label: "Gray" },
+];
 
-    const verticalMap = {
-        top: "justify-start",
-        center: "justify-center",
-        bottom: "justify-end",
-    };
-    const handleFormSubmit = async (e) => {
-        e.preventDefault()
-        const formData = new FormData();
-        const dataObj = {
-            title: form.title,
-            heading: form.heading,
-            subHeading: form.subHeading,
-            ctaText: form.ctaText,
-            ctaLink: form.ctaLink,
-            type: form.type,
-            placement: form.placement,
-            position: form.position,
-            vertical: form.vertical,
-            isActive: form.isActive,
-            categoryId: form.categoryId,
-            priority: form.priority,
+const BUTTON_COLORS = [
+  { value: "blue", label: "Blue" },
+  { value: "red", label: "Red" },
+  { value: "green", label: "Green" },
+  { value: "purple", label: "Purple" },
+  { value: "black", label: "Black" },
+];
 
-        };
-        formData.append("data", JSON.stringify(dataObj));
-        formData.append("img", form.image);
-        formData.forEach((value, key) => {
-            console.log(key, value);
-        });
-        console.log(formData, "Form Data")
-        try {
+const BannerForm = ({ banner, onClose, onSuccess, isFullPage }) => {
+  const [formData, setFormData] = useState({
+    title: "",
+    heading: "",
+    subHeading: "",
+    ctaText: "",
+    ctaLink: "",
+    type: "hero",
+    placement: "home_top",
+    category: "",
+    template: "dark-overlay",
+    priority: 0,
+    isActive: true,
+    textColor: "white",
+    ctaButtonColor: "blue",
+    startDate: "",
+    endDate: "",
+    image: null,
+    imagePreview: "",
+  });
 
-            await createBanner(formData).unwrap()
-            alert("banner created successfully")
-        }
-        catch (error) {
-            console.log(error)
-        }
+  const [createBanner, { isLoading: isCreating }] = useCreateBannerMutation();
+  const [updateBanner, { isLoading: isUpdating }] = useUpdateBannerMutation();
+  const [error, setError] = useState("");
+
+  // Populate form if editing
+  useEffect(() => {
+    if (banner) {
+      setFormData((prev) => ({
+        ...prev,
+        title: banner.title || "",
+        heading: banner.heading || "",
+        subHeading: banner.subHeading || "",
+        ctaText: banner.ctaText || "",
+        ctaLink: banner.ctaLink || "",
+        type: banner.type || "hero",
+        placement: banner.placement || "home_top",
+        category: banner.category || "",
+        template: banner.template || "dark-overlay",
+        priority: banner.priority || 0,
+        isActive: banner.isActive !== undefined ? banner.isActive : true,
+        textColor: banner.textColor || "white",
+        ctaButtonColor: banner.ctaButtonColor || "blue",
+        startDate: banner.startDate ? banner.startDate.split("T")[0] : "",
+        endDate: banner.endDate ? banner.endDate.split("T")[0] : "",
+        imagePreview: banner.image || "",
+      }));
+    }
+  }, [banner]);
+
+  // Handle input change
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+    setError("");
+  };
+
+  // Handle image change
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData((prev) => ({
+        ...prev,
+        image: file,
+        imagePreview: URL.createObjectURL(file),
+      }));
+      setError("");
+    }
+  };
+
+  // Handle submit
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    // Validation
+    if (!formData.type || !formData.template) {
+      setError("Type and Template are required");
+      return;
     }
 
+    if (!banner && !formData.image) {
+      setError("Image is required for new banners");
+      return;
+    }
 
-    return (
-        <div className="max-w-7xl mx-auto p-6 md:p-8 space-y-8">
-            <div className="flex items-center justify-between border-b pb-5">
-                <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">Create Banner</h1>
-            </div>
-            
-            <form onSubmit={handleFormSubmit} className="space-y-8">
-                <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-                    {/* Left Column: Form Inputs */}
-                    <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col gap-6">
-                        <div className="flex items-center gap-2 mb-2">
-                            <div className="w-1.5 h-6 bg-blue-600 rounded-full"></div>
-                            <h2 className="text-xl font-bold text-gray-800">Banner Details</h2>
-                        </div>
-                        <BannerInputs form={form} setForm={setForm} />
-                    </div>
-                    
-                    {/* Right Column: Preview & Action */}
-                    <div className="flex flex-col gap-8">
-                        <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 flex-1 flex flex-col">
-                            <div className="flex items-center gap-2 mb-6">
-                                <div className="w-1.5 h-6 bg-blue-600 rounded-full"></div>
-                                <h2 className="text-xl font-bold text-gray-800">Live Preview</h2>
-                            </div>
-                            <div className="flex-1 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center p-4">
-                                <BannerPreview form={form} verticalMap={verticalMap} horizontalMap={horizontalMap} />
-                            </div>
-                        </div>
+    try {
+      const formDataToSend = new FormData();
 
-                        {/* Submit Actions Box */}
-                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
-                            <p className="text-sm text-gray-500 max-w-sm">Ensure your banner image meets size requirements and looks good in preview before saving.</p>
-                            <button 
-                                type="submit"
-                                disabled={isLoading}
-                                className={`px-8 py-3 rounded-xl font-semibold shadow-md transition-all ${
-                                    isLoading 
-                                    ? "bg-gray-400 text-white cursor-not-allowed" 
-                                    : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:shadow-lg hover:-translate-y-0.5"
-                                }`}
-                            >
-                                {isLoading ? "Saving..." : "Save Banner"}
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </form>
+      // Create data object for backend
+      const data = {
+        title: formData.title,
+        heading: formData.heading,
+        subHeading: formData.subHeading,
+        ctaText: formData.ctaText,
+        ctaLink: formData.ctaLink,
+        type: formData.type,
+        placement: formData.placement,
+        category: formData.category,
+        template: formData.template,
+        priority: parseInt(formData.priority),
+        isActive: formData.isActive,
+        textColor: formData.textColor,
+        ctaButtonColor: formData.ctaButtonColor,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+      };
+
+      formDataToSend.append("data", JSON.stringify(data));
+
+      if (formData.image) {
+        formDataToSend.append("img", formData.image);
+      }
+
+      if (banner) {
+        // Update
+        await updateBanner({
+          id: banner._id,
+          formData: formDataToSend,
+        }).unwrap();
+      } else {
+        // Create
+        await createBanner(formDataToSend).unwrap();
+      }
+
+      onSuccess();
+    } catch (err) {
+      setError(err.data?.message || "Failed to save banner");
+    }
+  };
+
+  const isLoading = isCreating || isUpdating;
+
+  return (
+    <div className={!isFullPage ? "p-6" : ""}>
+      <div className={!isFullPage ? "flex justify-between items-center mb-6 border-b pb-4" : "flex justify-between items-center mb-6"}>
+        <h2 className="text-2xl font-bold text-gray-800">
+          {banner ? "Edit Banner" : "Create New Banner"}
+        </h2>
+        {!isFullPage && (
+          <button
+            onClick={onClose}
+            className="text-gray-500 hover:text-gray-700 text-2xl"
+          >
+            ×
+          </button>
+        )}
+      </div>
+
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
         </div>
-    )
-}
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Type & Template (2 columns) */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Banner Type *
+            </label>
+            <select
+              name="type"
+              value={formData.type}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {BANNER_TYPES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Template *
+            </label>
+            <select
+              name="template"
+              value={formData.template}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {TEMPLATES.map((t) => (
+                <option key={t.value} value={t.value}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Heading & Subheading */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Heading
+          </label>
+          <input
+            type="text"
+            name="heading"
+            value={formData.heading}
+            onChange={handleChange}
+            placeholder="e.g., Summer Collection"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Sub Heading
+          </label>
+          <input
+            type="text"
+            name="subHeading"
+            value={formData.subHeading}
+            onChange={handleChange}
+            placeholder="e.g., Up to 50% off"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
+
+        {/* CTA Text & Link */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              CTA Button Text
+            </label>
+            <input
+              type="text"
+              name="ctaText"
+              value={formData.ctaText}
+              onChange={handleChange}
+              placeholder="e.g., Shop Now"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              CTA Link
+            </label>
+            <input
+              type="text"
+              name="ctaLink"
+              value={formData.ctaLink}
+              onChange={handleChange}
+              placeholder="e.g., /products"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        {/* Placement & Category */}
+        {formData.type !== "category" && (
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Placement
+            </label>
+            <select
+              name="placement"
+              value={formData.placement}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {PLACEMENTS.map((p) => (
+                <option key={p.value} value={p.value}>
+                  {p.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
+        {formData.type === "category" && (
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Category Name
+            </label>
+            <input
+              type="text"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              placeholder="e.g., Electronics"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        )}
+
+        {/* Image Upload */}
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Banner Image {!banner && "*"}
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          {formData.imagePreview && (
+            <img
+              src={formData.imagePreview}
+              alt="Preview"
+              className="mt-3 h-32 object-cover rounded-lg"
+            />
+          )}
+        </div>
+
+        {/* Priority & Status */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Priority
+            </label>
+            <input
+              type="number"
+              name="priority"
+              value={formData.priority}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div className="flex items-end">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                name="isActive"
+                checked={formData.isActive}
+                onChange={handleChange}
+                className="w-4 h-4"
+              />
+              <span className="text-sm font-semibold text-gray-700">
+                Active
+              </span>
+            </label>
+          </div>
+        </div>
+
+        {/* Text & Button Colors */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Text Color
+            </label>
+            <select
+              name="textColor"
+              value={formData.textColor}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {TEXT_COLORS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Button Color
+            </label>
+            <select
+              name="ctaButtonColor"
+              value={formData.ctaButtonColor}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {BUTTON_COLORS.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        {/* Dates */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              Start Date
+            </label>
+            <input
+              type="date"
+              name="startDate"
+              value={formData.startDate}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              End Date
+            </label>
+            <input
+              type="date"
+              name="endDate"
+              value={formData.endDate}
+              onChange={handleChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+        </div>
+
+        {/* Preview */}
+        {formData.imagePreview && <BannerPreview formData={formData} />}
+
+        {/* Submit Buttons */}
+        <div className={`flex gap-3 justify-end pt-4 ${!isFullPage ? "border-t" : "border-t mt-6 pt-6"}`}>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-100"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white rounded-lg font-semibold"
+          >
+            {isLoading ? "Saving..." : banner ? "Update Banner" : "Create Banner"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+export default BannerForm;

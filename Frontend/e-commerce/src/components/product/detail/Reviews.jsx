@@ -2,20 +2,21 @@ import { useCreateReviewsMutation } from "./reviewSlice";
 import { useState } from "react";
 import { useParams } from "react-router";
 import Alert from "../../Alert";
+import { Star } from "lucide-react";
 
 export default function Reviews({ reviews }) {
   const [createReviews] = useCreateReviewsMutation();
-  const [alert, setAlert] = useState({
-    message: "",
-    type: "success"
-  })
   const { id } = useParams();
 
+  const [alert, setAlert] = useState({ message: "", type: "success" });
+
   const [review, setReview] = useState({
-    rating: 2,
+    rating: 0,
     comment: "",
     productId: id,
   });
+
+  const [hover, setHover] = useState(0);
 
   const [page, setPage] = useState(0);
   const reviewsPerPage = 4;
@@ -27,32 +28,22 @@ export default function Reviews({ reviews }) {
     }));
   }
 
-  function onRatingChange(e) {
-    setReview((prev) => ({
-      ...prev,
-      rating: Number(e.target.value),
-    }));
-  }
-
   async function handleSubmit(e) {
     e.preventDefault();
 
     try {
       await createReviews(review).unwrap();
-      setAlert({message: "Review added successfully", type: "success"})
+      setAlert({ message: "Review added successfully", type: "success" });
 
-      setReview({
-        rating: 2,
-        comment: "",
-        productId: id,
-      });
+      setReview({ rating: 0, comment: "", productId: id });
     } catch (err) {
-      console.log(err);
-      setAlert({message: err?.data?.message || "Error adding review", type: "error"})
+      setAlert({
+        message: err?.data?.message || "Error adding review",
+        type: "error",
+      });
     }
   }
 
- 
   const startIndex = page * reviewsPerPage;
   const currentReviews = reviews?.slice(
     startIndex,
@@ -60,67 +51,106 @@ export default function Reviews({ reviews }) {
   );
 
   return (
-    <div>
+    <div className="w-full max-w-5xl mx-auto py-10 space-y-8">
       
-      <h3 className="text-2xl font-semibold mb-4">Reviews & Ratings</h3>
+      {/* Heading */}
+      <div className="flex flex-col gap-2">
+        <h3 className="text-3xl font-semibold tracking-tight">
+          Reviews & Ratings
+        </h3>
+        <p className="text-gray-500 text-sm">
+          Share your experience with this product
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="relative space-y-4">
-        <div className="rating">
+      {/* Review Form */}
+      <form
+        onSubmit={handleSubmit}
+        className="p-6 rounded-2xl border bg-white/60 backdrop-blur-md shadow-sm space-y-5"
+      >
+        {/* Star Rating */}
+        <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((num) => (
-            <input
+            <Star
               key={num}
-              type="radio"
-              name="rating"
-              value={num}
-              checked={review.rating === num}
-              onChange={onRatingChange}
-              className="mask mask-star-2 bg-orange-400"
+              size={28}
+              onMouseEnter={() => setHover(num)}
+              onMouseLeave={() => setHover(0)}
+              onClick={() =>
+                setReview((prev) => ({ ...prev, rating: num }))
+              }
+              className={`cursor-pointer transition-all duration-200 ${
+                (hover || review.rating) >= num
+                  ? "fill-yellow-400 text-yellow-400 scale-110"
+                  : "text-gray-300"
+              }`}
             />
           ))}
         </div>
-        
 
+        {/* Textarea */}
         <textarea
-          className="textarea w-full"
           name="comment"
           value={review.comment}
           onChange={onReviewChange}
-          placeholder="Write a Review"
+          placeholder="Write your honest thoughts..."
+          className="w-full p-4 rounded-xl border focus:outline-none focus:ring-2 focus:ring-black/10 resize-none text-sm"
         />
 
-        <button type="submit" className="btn btn-primary">
-          Post
+        {/* Submit */}
+        <button
+          type="submit"
+          className="px-6 py-2 rounded-xl bg-black text-white text-sm font-medium hover:opacity-90 transition"
+        >
+          Post Review
         </button>
       </form>
 
-     <Alert message={alert.message} type={alert.type} onClose ={()=>setAlert({message:""})}/>
-      <div className="grid grid-cols-2 gap-4 mt-4">
-        {currentReviews?.map((rev) => (
-          <div key={rev._id} className="border border-gray rounded-sm p-2">
-            <p className="font-bold">{rev.username}</p>
+      <Alert
+        message={alert.message}
+        type={alert.type}
+        onClose={() => setAlert({ message: "" })}
+      />
 
-            <div className="rating">
+      {/* Reviews List */}
+      <div className="grid md:grid-cols-2 gap-6">
+        {currentReviews?.map((rev) => (
+          <div
+            key={rev._id}
+            className="p-5 rounded-2xl border bg-white shadow-sm hover:shadow-md transition"
+          >
+            {/* User */}
+            <p className="font-semibold text-sm mb-2">
+              {rev.username}
+            </p>
+
+            {/* Stars */}
+            <div className="flex gap-1 mb-2">
               {[1, 2, 3, 4, 5].map((num) => (
-                <input
+                <Star
                   key={num}
-                  type="radio"
-                  name={`rating-${rev._id}`}
-                  className="mask mask-star-2 bg-orange-400"
-                  checked={num <= rev.rating}
-                  readOnly
+                  size={18}
+                  className={
+                    num <= rev.rating
+                      ? "fill-yellow-400 text-yellow-400"
+                      : "text-gray-300"
+                  }
                 />
               ))}
             </div>
 
-            <p>{rev.comment}</p>
+            {/* Comment */}
+            <p className="text-sm text-gray-600 leading-relaxed">
+              {rev.comment}
+            </p>
           </div>
         ))}
       </div>
 
-      {/* Pagination buttons */}
-      <div className="flex gap-4 mt-4">
+      {/* Pagination */}
+      <div className="flex justify-between items-center pt-4">
         <button
-          className="btn"
+          className="px-4 py-2 rounded-lg border text-sm disabled:opacity-40"
           disabled={page === 0}
           onClick={() => setPage((prev) => prev - 1)}
         >
@@ -128,11 +158,11 @@ export default function Reviews({ reviews }) {
         </button>
 
         <button
-          className="btn"
+          className="px-4 py-2 rounded-lg border text-sm disabled:opacity-40"
           disabled={startIndex + reviewsPerPage >= reviews.length}
           onClick={() => setPage((prev) => prev + 1)}
         >
-          More Reviews
+          Next
         </button>
       </div>
     </div>

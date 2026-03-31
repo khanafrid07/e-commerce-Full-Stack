@@ -12,11 +12,11 @@ export default function ProductInfo({ info }) {
 
                 <h2 className="font-bold text-4xl leading-relaxed">{info.title}</h2>
                 <div className="font-bold text-2xl text-blue-500 flex gap-3">
-                    <p> &#8377;{finalPrice}</p>
+                    <p> &#8377;{info.finalPrice || finalPrice}</p>
                     <div className="flex items-center gap-2 text-blue-400">
                         MRP
-                    <p className="line-through"> &#8377;{info.price}</p>
-                    <p className="text-yellow-600 font-bold text-lg">({info.discount}% OFF)</p>
+                        <p className="line-through"> &#8377;{info.price}</p>
+                        <p className="text-yellow-600 font-bold text-lg">({info.discount}% OFF)</p>
 
                     </div>
                 </div>

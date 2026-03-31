@@ -1,54 +1,94 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
-const bannerSchema = new mongoose.Schema({
-  title: String,
+const bannerSchema = new mongoose.Schema(
+  {
+    
+    title: {
+      type: String,
+      trim: true,
+    },
+    heading: {
+      type: String,
+      trim: true,
+    },
+    subHeading: {
+      type: String,
+      trim: true,
+    },
 
-  image: String,
+   
+    image: {
+      type: String, // URL
+      required: true,
+    },
 
+    ctaText: {
+      type: String,
+      trim: true,
+    },
+    ctaLink: {
+      type: String,
+      trim: true,
+    },
 
-  heading: String,
-  subHeading: String,
+   
+    type: {
+      type: String,
+      enum: ["hero", "promo", "category"],
+      required: true,
+    },
 
-  ctaText: String,
-  ctaLink: String,
+    placement: {
+      type: String,
+      enum: ["home_top", "home_middle", "home_bottom"],
+    },
 
-  type: {
-    type: String,
-    enum: ["hero", "category", "promo"]
+   category:String,
+
+    
+    template: {
+      type: String,
+      enum: [
+        "none",
+        "light-overlay",
+        "dark-overlay",
+        "left-dark",
+        "center-light",
+        "overlay-gradient",
+        "gradient-right",
+        "card-overlay",
+        "minimal",
+      ],
+      required: true,
+    },
+
+    priority: {
+      type: Number,
+      default: 0,
+    },
+
+    startDate: Date,
+    endDate: Date,
+
+    // Status
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+
+    // 🎨 TEXT STYLING (Lightweight options)
+    textColor: {
+      type: String,
+      enum: ["white", "dark", "gray"],
+      default: "white",
+    },
+    ctaButtonColor: {
+      type: String,
+      enum: ["blue", "red", "green", "purple", "black"],
+      default: "blue",
+    },
   },
+  { timestamps: true }
+);
 
-  categoryId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Category"
-  },
-
-  placement: {
-    type: String,
-    enum: ["home_top", "home_middle", "home_bottom"],
-    default: "home_top"
-  },
-
-  position: {
-    type: String,
-    enum: ["left", "center", "right"],
-    default: "left"
-  },
-
-  vertical: {
-    type: String,
-    enum: ["top", "center", "bottom"],
-    default: "center"
-  },
-
-  priority: Number,
-
-  startDate: Date,
-  endDate: Date,
-
-  isActive: {
-    type: Boolean,
-    default: true
-  }
-});
-const Banner = mongoose.model("Banner", bannerSchema);
-module.exports = Banner
+module.exports = mongoose.model("Banner", bannerSchema);

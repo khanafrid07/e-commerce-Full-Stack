@@ -1,152 +1,123 @@
-import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useGetBannerQuery } from "../features/Banners/BannerSlice";
 import { Link } from "react-router-dom";
-import shoes from "../assets/shoes.png";
 
-export default function PromotionalBanner() {
+export default function PromotionalBanner({ placement = "home_middle" }) {
+  const { data: banners = [], isLoading } = useGetBannerQuery({ type: "promo", placement });
+  const promoBanners = banners?.filter(banner => banner.placement === placement) || [];
+  if (!banners) return null;
+
+  const [idx, setIdx] = useState(0);
+
+  useEffect(() => {
+    if (promoBanners.length > 1) {
+      const interval = setInterval(() => {
+        setIdx((prevIdx) => (prevIdx + 1) % promoBanners.length);
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [promoBanners.length]);
+
+  if (isLoading) {
+    return (
+      <section className="w-full max-w-7xl mx-auto p-4 sm:p-8">
+        <div className="w-full h-[300px] sm:h-[400px] bg-gray-100 animate-pulse rounded-2xl"></div>
+      </section>
+    );
+  }
+
+  if (promoBanners.length === 0) return null;
+
+  const banner = promoBanners[idx];
+
+  const horizontalMap = {
+    left: "items-start text-left",
+    center: "items-center text-center",
+    right: "items-end text-right",
+  };
+
+  const verticalMap = {
+    top: "justify-start",
+    center: "justify-center",
+    bottom: "justify-end",
+  };
+
   return (
-    <section className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-          className="relative overflow-hidden rounded-2xl bg-gray-500 grid grid-cols-1 md:grid-cols-2 min-h-[320px] sm:min-h-[400px] md:min-h-[480px]"
-          style={{ fontFamily: "'DM Sans', sans-serif" }}
-        >
-          {/* Bottom accent line */}
-          <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-gradient-to-r from-red-600 via-amber-400 to-red-600 opacity-70 z-10" />
+    <section className="w-full max-w-7xl mx-auto p-4 sm:p-8">
+      <div className="relative w-full h-[300px] sm:h-[400px] rounded-2xl overflow-hidden shadow-2xl group">
 
-          {/* ── LEFT CONTENT ── */}
-          <div className="flex flex-col justify-between p-6 sm:p-8 md:p-10 lg:p-14 relative z-10">
+        {/* Background Image */}
+        <img
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+          src={banner.image}
+          alt={banner.title || "Promotional Banner"}
+        />
 
-            {/* Tag */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.3 }}
-              className="flex items-center gap-2"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-red-600" />
-              <span className="text-[10px] tracking-[0.18em] uppercase text-neutral-500">
-                Featured Product
-              </span>
-              <span className="text-neutral-700 mx-1">—</span>
-              <span className="text-[10px] tracking-[0.15em] uppercase text-red-600 font-medium">
-                Live Now
-              </span>
-            </motion.div>
+        {/* Overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none transition-opacity duration-500"
+          style={{
+            backgroundColor: banner.overlayColor || "#2563eb",
+            opacity: (banner.overlayOpacity || 0) / 100
+          }}
+        />
 
-            {/* Headline + Divider + Stars */}
-            <div className="flex flex-col gap-4">
-              <motion.h2
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-                className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-[1.05] tracking-tight text-white"
-                style={{ fontFamily: "'Playfair Display', serif" }}
-              >
-                Premium<br />
-                <em className="not-italic text-[#bba98a]">Air</em> Sneakers
-              </motion.h2>
+        {/* Content */}
+        <div className={`absolute inset-0 flex flex-col p-8 sm:p-12 z-10 transition-all duration-500 ${verticalMap[banner.vertical] || verticalMap.center} ${horizontalMap[banner.position] || horizontalMap.center}`}>
 
-              <div className="w-8 h-px bg-neutral-800" />
+          <div className="space-y-3 max-w-2xl transform transition-transform duration-700 translate-y-0 opacity-100">
+            {banner.title && (
+              <h2 className={`${banner.titleSize || 'text-3xl sm:text-4xl md:text-5xl'} ${banner.titleWeight || 'font-extrabold'} tracking-tight drop-shadow-sm`} style={{ color: banner.titleColor || "#ffffff" }}>
+                {banner.title}
+              </h2>
+            )}
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6 }}
-                className="flex items-center gap-3"
-              >
-                <div className="flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-[#c8a96e] text-sm">★</span>
-                  ))}
-                </div>
-                <span className="text-xs text-neutral-600 tracking-wide">124 reviews</span>
-              </motion.div>
-            </div>
+            {banner.heading && (
+              <h3 className={`${banner.headingSize || 'text-xl sm:text-2xl'} ${banner.headingWeight || 'font-bold'} drop-shadow-sm`} style={{ color: banner.headingColor || "#ffffff" }}>
+                {banner.heading}
+              </h3>
+            )}
 
-            {/* Price + CTA */}
-            <div className="flex flex-col gap-6">
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.7 }}
-                className="flex items-baseline gap-4"
-              >
-                <span
-                  className="text-3xl sm:text-4xl md:text-5xl font-normal text-white leading-none tracking-tight"
-                  style={{ fontFamily: "'Playfair Display', serif" }}
-                >
-                  $79
-                </span>
-                <span className="text-lg text-neutral-600 line-through font-light">$129</span>
-                <span className="text-[11px] tracking-widest uppercase bg-red-600 text-white px-2.5 py-1 rounded-sm font-medium self-center">
-                  40% off
-                </span>
-              </motion.div>
+            {banner.subHeading && (
+              <p className={`${banner.subHeadingSize || 'text-base sm:text-lg'} ${banner.subHeadingWeight || 'font-medium'} opacity-90 drop-shadow-sm`} style={{ color: banner.subHeadingColor || "#e5e7eb" }}>
+                {banner.subHeading}
+              </p>
+            )}
 
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.85 }}
-                className="flex items-center gap-5"
-              >
-                <Link to="/product/123">
-                  <motion.button
-                    whileHover={{ y: -2 }}
-                    whileTap={{ scale: 0.97 }}
-                    className="inline-flex items-center gap-2.5 bg-white text-black text-[13px] font-medium tracking-[0.1em] uppercase px-7 py-3.5 rounded-[4px] transition-colors hover:bg-gray-100"
+            {banner.ctaText && (
+              <div className="pt-4">
+                <Link to={banner.ctaLink || "#"}>
+                  <button
+                    className="px-6 py-3 sm:px-8 sm:py-3.5 rounded-full font-bold shadow-lg text-sm sm:text-base transition-all hover:shadow-xl hover:-translate-y-1 active:scale-95 border border-white/10"
+                    style={{
+                      color: banner.ctaTextColor,
+                      backgroundColor: banner?.ctaBgColor
+                    }}
                   >
-                    Shop Now
-                    <ArrowRight size={15} />
-                  </motion.button>
+                    {banner.ctaText}
+                  </button>
                 </Link>
-                <button className="text-[12px] text-neutral-600 tracking-widest uppercase hover:text-neutral-400 transition-colors">
-                  + Wishlist
-                </button>
-              </motion.div>
-            </div>
+              </div>
+            )}
           </div>
 
-          {/* ── RIGHT IMAGE ── */}
-          <div className="relative flex items-center justify-center overflow-hidden min-h-[280px] md:min-h-0">
-            {/* Background radial */}
-            <div className="absolute inset-0 " />
+        </div>
 
-            {/* Left border accent */}
-            <div className="absolute top-0 bottom-0 left-0 w-px bg-gradient-to-b from-transparent via-neutral-800 to-transparent" />
-
-            {/* Ghost number */}
-            <span
-              className="absolute text-[180px] font-bold text-white/[0.03] leading-none tracking-tighter select-none pointer-events-none"
-              style={{ fontFamily: "'Playfair Display', serif" }}
-            >
-              79
-            </span>
-            
-
-            {/* Shoe image */}
-            <motion.img
-              src={shoes}
-              alt="Premium Air Sneakers"
-              className="relative z-10 w-48 sm:w-64 md:w-80 lg:w-96 object-contain drop-shadow-2xl"
-              initial={{ opacity: 0, x: 30, rotate: -8 }}
-              animate={{ opacity: 1, x: 0, rotate: -8 }}
-              transition={{ delay: 0.5, duration: 0.9, type: "spring", stiffness: 80 }}
-              whileHover={{ y: -10, rotate: -5 }}
-            />
-
-            {/* Corner label */}
-            <span className="absolute top-6 right-6 text-[10px] tracking-[0.15em] uppercase text-neutral-700 font-normal"
-              style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
-            >
-              SS 2026 Collection
-            </span>
-            <button className="absolute bottom-4 btn btn-lg font-semibold transition-transform duration-300 hover:scale-110">Explore More Collections</button>
+        {/* Carousel Indicators (if multiple banners) */}
+        {promoBanners.length > 1 && (
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2 z-20">
+            {promoBanners.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setIdx(i)}
+                className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === idx ? "bg-white w-6" : "bg-white/50 hover:bg-white/80"
+                  }`}
+                aria-label={`Go to slide ${i + 1}`}
+              />
+            ))}
           </div>
-        </motion.div>
+        )}
+
       </div>
     </section>
   );

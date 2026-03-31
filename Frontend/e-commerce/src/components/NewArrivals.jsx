@@ -34,29 +34,24 @@ export default function NewArrivals() {
   const { allProducts = [] } = data || {};
 
   return (
-    <section className="relative overflow-hidden">
-      
+    <section className="relative overflow-hidden mt-4">
 
-      
+
+
       <div className="max-w-9xl mx-auto px-4  sm:px-6 md:px-8 ">
         {/* Header Section */}
 
         {/* Products Container */}
         <div className="relative  overflow-hidden transition-all duration-300 hover:shadow-2xl">
-        <div className="  text-center">
-          <div className="inline-flex   gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full  font-semibold text-sm">
-            <Sparkles size={18} />
-            Just Arrived
+          <div className="  text-center">
+            <div className="inline-flex   gap-2 bg-orange-100 text-orange-700 px-4 py-2 rounded-full  font-semibold text-sm">
+              <Sparkles size={18} />
+              Just Arrived
+            </div>
+
+
+
           </div>
-
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-red-600  to-orange-600 bg-clip-text text-transparent ">
-            New Arrivals
-          </h2>
-
-          {/* <p className="text-gray-600 text-sm md:text-base max-w-2xl ">
-            Discover the latest additions to our collection. Fresh styles and exclusive items just for you
-          </p> */}
-        </div>
           {/* Background decorative elements */}
           <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-orange-200/30 to-transparent rounded-full blur-3xl -z-5" />
           <div className="absolute bottom-0 left-0 w-72 h-72 bg-gradient-to-tr from-yellow-200/20 to-transparent rounded-full blur-3xl -z-5" />

@@ -22,10 +22,20 @@ export const loginUser = createAsyncThunk(
       const res = await axios.post("http://localhost:8080/api/auth/login", data);
       return res.data;
     } catch (err) {
+       console.log("ERROR:", err.response?.data);
       return rejectWithValue(err?.response?.data?.message || "Login failed");
     }
   }
 );
+export const loginWithGoogle = createAsyncThunk("auth/google", async (token,  { rejectWithValue }) => {
+  try {
+    const res = await axios.post("http://localhost:8080/api/auth/google", {token});
+    return res.data
+  } catch (err) {
+    console.log("GOOGLE ERROR:", err.response?.data);
+    return rejectWithValue(err?.response?.message || "Login failed")
+  }
+})
 
 export const addAddress = createAsyncThunk(
   "auth/addAddress",
@@ -35,14 +45,14 @@ export const addAddress = createAsyncThunk(
       const res = await axios.post(
         "http://localhost:8080/api/auth/address",
         data,
-        { 
+        {
           withCredentials: true,
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-     
+
       dispatch(setCurrentAddress(res.data.address))
       return res.data;
     } catch (err) {
@@ -82,7 +92,7 @@ const authSlice = createSlice({
     currentAddress: JSON.parse(localStorage.getItem("currentAddress")) || null
   },
 
-    
+
 
 
   reducers: {
@@ -91,7 +101,7 @@ const authSlice = createSlice({
       state.token = null;
       localStorage.removeItem("token");
     },
-    setCurrentAddress :(state, action)=>{
+    setCurrentAddress: (state, action) => {
       state.currentAddress = action.payload
       localStorage.setItem("currentAddress", JSON.stringify(action.payload));
     }
@@ -126,6 +136,20 @@ const authSlice = createSlice({
         localStorage.setItem("token", action.payload.token);
       })
       .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(loginWithGoogle.pending, (state, action) => {
+        state.loading = false;
+        state.error = null
+      })
+      .addCase(loginWithGoogle.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user
+        state.token = action.payload.token;
+        localStorage.setItem("token", action.payload.token);
+      })
+      .addCase(loginWithGoogle.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })

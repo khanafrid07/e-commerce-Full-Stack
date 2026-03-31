@@ -9,25 +9,25 @@ import DiscoverCollections from "../components/DiscoverCollection";
 import FashionCollection from "../components/FashionCollection";
 import OfferSignup from "../components/OfferSignup";
 
-export default function Home(){
+export default function Home() {
 
 
-    return(
+    return (
         <>
-        
-        <Hero/>
-        {/* <PromotionalBanner/> */}
-        <CategorySection/>
-        {/* <FeaturedProduct/> */}
-        <NewArrivals/>
-        <FashionCollection/>
-        {/* <DiscoverCollections/> */}
-        <PromotionalBanner/>
-        
-        <TrendingProducts/>
-        <ViewedProduct/>
-        <OfferSignup/>
-        
+
+            <Hero />
+            <CategorySection />
+            {/* <PromotionalBanner placement="home_middle" /> */}
+            {/* <FeaturedProduct/> */}
+            <NewArrivals />
+            <FashionCollection />
+            {/* <DiscoverCollections/> */}
+            <PromotionalBanner placement="home_middle" />
+
+            <TrendingProducts />
+            <ViewedProduct />
+            <OfferSignup />
+
         </>
     )
 }

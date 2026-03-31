@@ -63,12 +63,7 @@ export default function TrendingProducts({ category, gender }) {
         </div>
       </div>
 
-      {/* Additional Info */}
-      <div className="mt-8 text-center">
-        <p className="text-gray-600 text-sm">
-          <span className="font-semibold text-purple-600">{allProducts.length}</span> trending products available
-        </p>
-      </div>
+
     </section >
   );
 }

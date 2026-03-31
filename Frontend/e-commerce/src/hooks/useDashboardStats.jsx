@@ -1,10 +1,10 @@
 
 import { useGetDashboardStatsQuery } from "../features/Dashboard/dashboardSlice"
 
-export default function useDashboardStats(){
+export default function useDashboardStats() {
 
     const { data, isLoading, isError } = useGetDashboardStatsQuery()
-    console.log(data)
+
 
     return {
         recentOrders: data?.recentOrder || [],
@@ -14,8 +14,9 @@ export default function useDashboardStats(){
         totalOrders: data?.totalOrders || 0,
         totalCustomer: data?.totalUser || 0,
         topProducts: data?.topSellingProducts || [],
+        cartCount: data?.cartCount || 0,
         isLoading,
         isError
     }
-    
+
 }

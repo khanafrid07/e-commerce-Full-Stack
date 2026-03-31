@@ -14,7 +14,7 @@ const cartRoute = require("./routes/cartRoutes.js")
 const reviewRoute = require("./routes/reviewRoutes.js")
 const paymentRoute = require("./routes/paymentRoute.js")
 const bannerRoute = require("./routes/bannerRoutes.js")
-const categoryRoute = require("./routes/categoryRoutes.js")
+
 const dashboardStats = require("./routes/dashboardRoute.js")
 app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 
@@ -34,7 +34,7 @@ app.use("/api/orders", orderRoute)
 app.use("/api/cart", cartRoute)
 app.use("/api/reviews", reviewRoute)
 app.use("/api/banners", bannerRoute)
-app.use("/api/categories", categoryRoute)
+
 app.use("/api/dashboard", dashboardStats)
 
 let port = process.env.PORT || 8080

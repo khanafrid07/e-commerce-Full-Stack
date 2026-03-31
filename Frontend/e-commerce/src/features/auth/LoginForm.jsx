@@ -1,3 +1,4 @@
+import GoogleLoginButton from "./GoogleLoginButton";
 export default function LoginForm({ email, setEmail, password, setPassword, loading, error, handleSubmit }) {
     return (
       <form onSubmit={handleSubmit}>
@@ -32,7 +33,10 @@ export default function LoginForm({ email, setEmail, password, setPassword, load
           <span className="text-sm border-b border-black">Or Login with</span>
 
           <div className="space-x-4">
-            <button type="button" className="btn btn-secondary">Google</button>
+            <GoogleLoginButton/>
+
+           
+            
             <button type="button" className="btn btn-warning">Facebook</button>
           </div>
 

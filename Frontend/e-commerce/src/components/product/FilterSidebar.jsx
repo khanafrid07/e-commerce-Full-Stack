@@ -28,14 +28,14 @@ export default function FilterSidebar({ filters, onChange, open, onClose }) {
       )}
 
       <aside className={`
-        fixed md:static top-0 left-0 z-50 h-full
+        fixed md:static top-0 left-0 z-50 h-full 
         w-64 md:w-[220px] bg-white border-r border-gray-100
         flex flex-col transition-transform duration-300
         ${open ? "translate-x-0 shadow-2xl" : "-translate-x-full md:translate-x-0"}
       `}>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-5">
+        <div className="flex items-center justify-between px-5 ">
           <div className="flex items-center gap-2">
             <SlidersHorizontal size={14} className="text-gray-400" />
             <span className="font-syne text-[15px] font-bold text-gray-900">Filter</span>
@@ -43,7 +43,7 @@ export default function FilterSidebar({ filters, onChange, open, onClose }) {
           <div className="flex items-center gap-3">
             {hasActive && (
               <button
-                onClick={() => ["category","gender","type","price","discount","search"].forEach(k => onChange(k,""))}
+                onClick={() => ["category", "gender", "type", "price", "discount", "search"].forEach(k => onChange(k, ""))}
                 className="text-[10px] text-gray-300 hover:text-red-400 transition-colors"
               >
                 Clear all
@@ -89,7 +89,7 @@ export default function FilterSidebar({ filters, onChange, open, onClose }) {
           )}
 
           <FilterSection title="Price">
-            <FilterItem label="Low → High" active={sort === "priceLow"}  onClick={() => toggle("price", "low")} />
+            <FilterItem label="Low → High" active={sort === "priceLow"} onClick={() => toggle("price", "low")} />
             <FilterItem label="High → Low" active={sort === "priceHigh"} onClick={() => toggle("price", "high")} />
           </FilterSection>
 

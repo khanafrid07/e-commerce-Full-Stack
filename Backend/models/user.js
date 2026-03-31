@@ -10,7 +10,7 @@ let userSchema = new Schema({
     },
     password: {
         type: String,
-        required: true
+        
     },
     addresses: [
     {
@@ -23,7 +23,13 @@ let userSchema = new Schema({
       phone: { type: String },
       isDefault: { type: Boolean, default: false },
     },
+    
   ],
+  provider: {
+  type: String,
+  enum: ["local", "google"],
+  default: "local"
+}
     
    
 },{timestamps: true})

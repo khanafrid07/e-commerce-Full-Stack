@@ -17,6 +17,7 @@ export default function UpdateProduct() {
     description: "",
     category: { main: "", sub: "", gender: "" },
     basePrice: 0,
+    finalPrice: 0,
     stock: 0,
     featured: false,
     discount: 0,
@@ -53,7 +54,7 @@ export default function UpdateProduct() {
       }));
 
       setVariants(loadedVariants);
-      
+
       // Load main product images (Base Variant images)
       setExistingImages(p.images || []);
     }
@@ -73,6 +74,7 @@ export default function UpdateProduct() {
       form.append("featured", JSON.stringify(formData.featured));
       form.append("discount", formData.discount || 0);
       form.append("category", JSON.stringify(formData.category));
+      form.append("finalPrice", formData.basePrice - (formData.basePrice * formData.discount) / 100);
 
       // Base Variant (attributes from GeneralInfo)
       form.append("baseVariant", JSON.stringify(formData.baseVariant));
@@ -82,6 +84,7 @@ export default function UpdateProduct() {
         variants.map(v => ({
           typeValues: v.typeValues,
           price: Number(v.price) || 0,
+          finalPrice: Number(v.finalPrice) || 0,
           stock: Number(v.stock) || 0,
           discount: Number(v.discount) || 0,
           thumbnailIndex: v.thumbnailIndex || 0,
@@ -111,7 +114,7 @@ export default function UpdateProduct() {
 
       await updateProduct({ id, data: form }).unwrap();
       alert("✅ Product updated successfully!");
-     
+
     } catch (err) {
       console.error(err);
       alert("❌ Failed to update product: " + (err.data?.message || err.message));
@@ -123,7 +126,7 @@ export default function UpdateProduct() {
       <div className="loading loading-spinner loading-lg text-primary"></div>
     </div>
   );
-  
+
   if (isError) return (
     <div className="min-h-screen bg-base-200 flex items-center justify-center p-4">
       <div className="alert alert-error shadow-lg max-w-md">
@@ -179,8 +182,8 @@ export default function UpdateProduct() {
             </div>
 
             {/* Update Button */}
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={isUpdating}
               className={`btn btn-primary btn-lg w-full ${isUpdating ? "loading" : ""}`}
             >

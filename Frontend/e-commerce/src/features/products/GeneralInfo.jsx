@@ -255,7 +255,7 @@ export default function GeneralInfo({ formData, setFormData }) {
             <input
               type="number"
               className="input input-bordered w-full bg-base-200"
-              value={finalPrice}
+              value={formData.finalPrice = formData.basePrice - (formData.basePrice * formData.discount) / 100}
               disabled
             />
           </div>

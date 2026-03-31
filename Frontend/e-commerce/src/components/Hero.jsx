@@ -37,17 +37,20 @@ export default function Hero() {
       transition: { duration: 0.6, ease: "easeOut" },
     },
   }
+  if (isLoading) {
+    return <p>Loading...</p>
+  }
 
   return (
-    <section className="relative overflow-hidden h-[30vh] sm:h-[70vh] lg:h-[85vh] w-full  overflow-hidden bg-black p-12">
+    <section className="relative overflow-hidden h-[30vh] sm:h-[70vh] lg:h-[85vh] w-full bg-black p-12 z-0 isolate">
       <div>
 
 
         <motion.div
           key={idx}
-          className="absolute w-full inset-0"
-          initial={{ scale: 1.08, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
+          className="absolute w-full inset-0 z-0"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
           transition={{ duration: 0.8 }}
         >
           <img
@@ -65,17 +68,18 @@ export default function Hero() {
           variants={containerVariants}
           initial="hidden"
           animate="visible"
-          className="absolute inset-0 flex items-center justify-center sm:justify-center px-5 sm:px-10 lg:px-20"
+          className="absolute inset-0 flex items-center justify-center sm:justify-center px-5 sm:px-10 lg:px-20 z-10"
         >
           <div className="max-w-xl text-center sm:text-left z-10">
 
-            {/* Badge */}
-            <motion.span
-              variants={itemVariants}
-              className="hidden sm:inline-block mb-4 px-4 py-1 bg-red-600 text-white text-xs font-bold rounded-full"
-            >
-              LIMITED TIME OFFER
-            </motion.span>
+            {banners[idx]?.title &&
+              <motion.span
+                variants={itemVariants}
+                className="hidden sm:inline-block mb-4 px-4 py-1 bg-red-600 text-white text-xs font-bold rounded-full"
+              >
+                LIMITED TIME OFFER
+              </motion.span>
+            }
 
             <motion.p
               variants={itemVariants}
@@ -103,10 +107,12 @@ export default function Hero() {
               variants={itemVariants}
               className="flex flex-col sm:flex-col sm:gap-2 gap-0 justify-start"
             >
-              <button onClick={() => navigate(`category${banners[idx]?.ctaLink}`)} className="px-1 py-2 w-[40%] btn btn-sm border-none sm:btn-md sm:w-auto bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition transform hover:scale-105">
-                {banners && banners[idx]?.ctaText}
-                <ArrowRight size={18} />
-              </button>
+              {banners[idx]?.ctaLink &&
+                <button onClick={() => navigate(`category${banners[idx]?.ctaLink}`)} className="px-1 py-2 w-[40%] btn btn-sm border-none sm:btn-md sm:w-auto bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold flex items-center justify-center gap-2 transition transform hover:scale-105">
+                  {banners && banners[idx]?.ctaText}
+                  <ArrowRight size={18} />
+                </button>
+              }
 
 
             </motion.div>

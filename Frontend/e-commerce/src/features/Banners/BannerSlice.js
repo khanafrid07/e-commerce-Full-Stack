@@ -14,17 +14,23 @@ export const bannerApi = createApi({
     tagTypes: ["banners"],
     endpoints: (builder) => ({
         getBanner: builder.query({
-            query: ({ type, categoryId, isAdmin } = {}) => {
+            query: ({ type, category, isAdmin } = {}) => {
                 let query = "/banners?";
 
                 if (type) query += `type=${type}&`;
-                if (categoryId) query += `categoryId=${categoryId}&`;
+                if (category) query += `category=${category}&`;
                 if (isAdmin) query += `isAdmin=${isAdmin}&`;
 
                 return { url: query };
             },
             providesTags: ["banners"]
         }),
+
+        getBannerById: builder.query({
+            query: (id) => `/banners/${id}`,
+            providesTags: (result, error, id) => [{ type: 'banners', id }]
+        }),
+
         createBanner: builder.mutation({
             query: (formData) => ({
                 url: "/banners",
@@ -32,16 +38,26 @@ export const bannerApi = createApi({
                 method: "POST"
             }),
             invalidatesTags: ["banners"]
-
         }),
-        updateBannerStatus: builder.mutation({
-            query: ({ id, isActive }) => ({
+
+        updateBanner: builder.mutation({
+            query: ({ id, formData }) => ({
                 url: `/banners/${id}`,
                 method: "PUT",
+                body: formData
+            }),
+            invalidatesTags: ["banners"]
+        }),
+
+        updateBannerStatus: builder.mutation({
+            query: ({ id, isActive }) => ({
+                url: `/banners/${id}/status`,
+                method: "PATCH",
                 body: { isActive }
             }),
             invalidatesTags: ["banners"]
         }),
+
         deleteBanner: builder.mutation({
             query: (id) => ({
                 url: `/banners/${id}`,
@@ -52,4 +68,11 @@ export const bannerApi = createApi({
     })
 })
 
-export const { useGetBannerQuery, useCreateBannerMutation, useUpdateBannerStatusMutation, useDeleteBannerMutation } = bannerApi
+export const { 
+    useGetBannerQuery, 
+    useGetBannerByIdQuery,
+    useCreateBannerMutation, 
+    useUpdateBannerMutation,
+    useUpdateBannerStatusMutation, 
+    useDeleteBannerMutation 
+} = bannerApi

@@ -115,6 +115,7 @@ router.post("/", validateSchema(productSchema), upload.any(), async (req, res) =
     const parsedCategory = JSON.parse(req.body.category);
     const parsedVariants = JSON.parse(req.body.variants);
     const parsedBaseVariant = JSON.parse(req.body.baseVariant);
+    console.log(req.body)
 
 
     const mainImages = req.files
@@ -151,6 +152,7 @@ router.post("/", validateSchema(productSchema), upload.any(), async (req, res) =
       images: mainImages,
       variants: parsedVariants,
       baseVariant: parsedBaseVariant,
+      finalPrice: req.body.finalPrice,
       featured: req.body.featured === "true" || req.body.featured === true
     });
 
@@ -178,6 +180,7 @@ router.put("/:id", verifyToken, upload.any(), async (req, res) => {
       existingImages,
       featured,
       baseVariant,
+      finalPrice
     } = req.body;
 
     const product = await Product.findById(req.params.id);
@@ -198,6 +201,7 @@ router.put("/:id", verifyToken, upload.any(), async (req, res) => {
     product.basePrice = Number(basePrice) || product.basePrice;
     product.stock = Number(stock) || product.stock;
     product.discount = Number(discount) || 0;
+    product.finalPrice = Number(finalPrice) || 0;
     product.category = parsedCategory;
     product.baseVariant = parsedBaseVariant;
     product.featured = parsedFeatured;

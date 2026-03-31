@@ -1,52 +1,93 @@
 const express = require("express")
-const jwt  = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const User = require("../models/user.js");
 const verifyToken = require("../middlewares/verifyUser.js");
 const router = express.Router()
-const {userSchema} = require("../joi.js")
+const { userSchema } = require("../joi.js")
+const { OAuth2Client } = require("google-auth-library")
 const validateSchema = require("../middlewares/validate.js")
 
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID)
+router.post("/register", validateSchema(userSchema), async (req, res) => {
 
-router.post("/register",validateSchema(userSchema), async(req, res)=>{
+  const { email, password, name } = req.body;
+  try {
 
-const {email, password} = req.body;
-    try{
-
-        const existingUser = await  User.findOne({email})
-        if(existingUser){
-          return  res.status(409).json({message: "User already exists"})
-        }
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const user  = new User({name, email, password:hashedPassword})
-        await user.save()
-        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "1d"})
-        res.status(201).json({user, token})
-    }catch(err){
-        res.status(500).json({message: err})
+    const existingUser = await User.findOne({ email })
+    if (existingUser) {
+      return res.status(409).json({ message: "User already exists" })
     }
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const user = new User({ name, email, password: hashedPassword })
+    await user.save()
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" })
+    res.status(201).json({ user, token })
+  } catch (err) {
+    res.status(500).json({ message: err })
+  }
 
 })
 
 
-router.post("/login",  async(req, res) => {
-    let {email, password} = req.body;
-    try{
-        let user = await User.findOne({email})
-        if(!user){
-            return res.status(404).json({message: "Invalid Credentials"})
-        }
-        let isMatch = await bcrypt.compare(password, user.password)
-        if(!isMatch){
-            return res.status(401).json({message: "Invalid Credentials"})
-        }
-       
-        let token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: "1d"})
-        res.status(201).json({user, token})
-    }catch(err){
-        res.status(400).json({message: err.message})
+router.post("/login", async (req, res) => {
+  let { email, password } = req.body;
+  try {
+    let user = await User.findOne({ email })
+    if (!user) {
+      return res.status(404).json({ message: "Invalid Credentials" })
     }
+    if (!user || user.provider === "google") {
+      return res.status(400).json({ message: "Use Google login" });
+    }
+    let isMatch = await bcrypt.compare(password, user.password)
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid Credentials" })
+    }
+
+    let token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" })
+    res.status(201).json({ user, token })
+  } catch (err) {
+    res.status(400).json({ message: err.message })
+  }
 })
+router.post("/google", async (req, res) => {
+
+  const { token } = req.body;
+
+  if (!token) return res.status(400).json({ message: "Token is required" });
+
+  try {
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const email = payload.email;
+    const name = payload.name;
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      user = new User({ name, email, provider: "google" });
+      await user.save();
+    }
+
+
+
+    const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+
+    res.status(200).json({
+      message: "Login successful",
+      user: { email, name },
+      token: jwtToken,
+    });
+  } catch (err) {
+    console.error("Google login error:", err);
+    res.status(400).json({ message: "Invalid Google token" });
+  }
+});
 
 router.get("/fetchUser", async (req, res) => {
   try {
@@ -64,26 +105,26 @@ router.get("/fetchUser", async (req, res) => {
   }
 })
 
-router.post("/address",verifyToken, async(req, res)=>{
-  try{
+router.post("/address", verifyToken, async (req, res) => {
+  try {
     let firstName = req.body.firstName;
     let lastName = req.body.lastName;
     console.log(`${firstName} ${lastName}`)
     let user = await User.findById(req.userId)
 
-    if(!user){
-      return res.status(404).json({message: "USer not found"})
+    if (!user) {
+      return res.status(404).json({ message: "USer not found" })
     }
-    
-    user.addresses.push({...req.body, addressName: `${firstName} ${lastName}`})
-    const newAddress = user.addresses[user.addresses.length-1]
+
+    user.addresses.push({ ...req.body, addressName: `${firstName} ${lastName}` })
+    const newAddress = user.addresses[user.addresses.length - 1]
     await user.save()
     console.log("added")
-    return res.status(201).json({message: "ADress added successfully", address: newAddress})
-  }catch(err){
-    return res.status(500).json({message: "Internal Server error"})
+    return res.status(201).json({ message: "ADress added successfully", address: newAddress })
+  } catch (err) {
+    return res.status(500).json({ message: "Internal Server error" })
   }
 
 })
 
-module.exports =  router
+module.exports = router

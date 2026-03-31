@@ -12,7 +12,7 @@ export default function ProductForm() {
     description: "",
     category: { main: "", sub: "", gender: "" },
     basePrice: 0,
-    attributes: {skinType:[null]},
+    finalPrice: 0,
     stock: 0,
     discount: 0,
     featured: false,
@@ -49,6 +49,7 @@ export default function ProductForm() {
       form.append("description", formData.description);
       form.append("category", JSON.stringify(formData.category));
       form.append("basePrice", formData.basePrice);
+      form.append("finalPrice", formData.basePrice - (formData.basePrice * formData.discount) / 100);
       form.append("stock", formData.stock);
       form.append("discount", formData.discount || 0);
       form.append("featured", formData.featured);
@@ -62,15 +63,14 @@ export default function ProductForm() {
           typeValues: v.typeValues,
           price: v.price,
           stock: v.stock,
+          finalPrice: v.price - (v.price * v.discount) / 100,
           discount: v.discount,
           thumbnailIndex: v.thumbnailIndex
         }))
       ));
 
-      // Main product images (These ARE the Base Variant images)
       newFiles.forEach(file => form.append("images", file));
 
-      // Additional Variant images
       variants.forEach((variant, i) => {
         variant.images.forEach(imgObj => {
           if (imgObj.file) {
@@ -90,6 +90,7 @@ export default function ProductForm() {
         basePrice: 0,
         stock: 0,
         discount: 0,
+        finalPrice: 0,
         featured: false,
         baseVariant: { typeValues: {}, price: 0, stock: 0 }
       });
@@ -130,10 +131,10 @@ export default function ProductForm() {
 
             {/* Additional Variants */}
             <div className="bg-base-100 rounded-2xl shadow-xl p-6">
-              <VariantSelection 
-                formData={formData} 
-                variants={variants} 
-                setVariants={setVariants} 
+              <VariantSelection
+                formData={formData}
+                variants={variants}
+                setVariants={setVariants}
               />
             </div>
 

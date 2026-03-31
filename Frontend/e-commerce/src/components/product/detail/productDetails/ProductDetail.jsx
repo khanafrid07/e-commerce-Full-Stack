@@ -111,7 +111,7 @@ export default function ProductDetail() {
 
 
                 }))
-                setImages(matched.images ?? product.images)
+                setImages(matched.images && matched.images.length > 0 ? matched.images : product.images)
                 setNoMatch(false)
             } else {
                 setNoMatch(true)
@@ -119,6 +119,7 @@ export default function ProductDetail() {
 
         }
     }, [selectedVariant, product])
+    console.log(images, "omg")
 
 
 

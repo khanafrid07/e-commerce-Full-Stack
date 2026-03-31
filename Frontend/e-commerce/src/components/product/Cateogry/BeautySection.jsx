@@ -1,4 +1,4 @@
-import CategoryBanner from "./CategoryBanner"
+import CategoryBanners from "./CategoryBanners"
 import TrendingProducts from "../../TrendingProducts"
 import Collection from "./Beauty/Category"
 import Skincare from "./Beauty/skincare"
@@ -8,8 +8,8 @@ export default function BeautySection() {
 
   return (
     <>
-      {/* Banner — CategoryBanner manages its own height internally */}
-      <CategoryBanner category={"Beauty"} />
+
+      <CategoryBanners category={"Beauty"} />
 
       <div className="p-2 sm:p-8">
         <h1 className="text-xl sm:text-2xl font-bold">Popular Products</h1>

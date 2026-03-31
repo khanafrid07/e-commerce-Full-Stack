@@ -12,7 +12,9 @@ export default function Login() {
     e.preventDefault();
     dispatch(loginUser({ email, password }));
   };
-
+const logoutUser = ()=>{
+  dispatch(logout())
+}
   
   return (
     <div className="grid md:grid-cols-2 min-h-screen">
@@ -20,6 +22,8 @@ export default function Login() {
       {/* Banner */}
       <div className="relative bg-gray-400 flex items-center justify-center">
         <h1 className="text-white text-3xl">Banner Page</h1>
+        <button onClick={()=>logoutUser()}>Logout</button>
+
 
         {/* Mobile overlay */}
         <div className="absolute inset-0 flex items-center justify-center md:hidden">
@@ -33,7 +37,7 @@ export default function Login() {
       <div className="hidden md:flex justify-center items-center border p-8">
         <LoginForm email={email} setEmail={setEmail} handleSubmit={handleSubmit} password={password} setPassword={setPassword} error={error} loading={loading}/>
       </div>
-
+      
     </div>
   );
 }

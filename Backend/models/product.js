@@ -4,6 +4,7 @@ const variantSchema = new mongoose.Schema({
   typeValues: { type: Object, required: true },
   stock: { type: Number, default: 0 },
   price: { type: Number, default: 0 },
+  finalPrice: { type: Number, default: 0 },
   images: [{ url: String, fileName: String }],
   thumbnailIndex: { type: Number, default: 0 },
   discount: { type: Number, default: 0 }
@@ -28,6 +29,10 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    finalPrice: {
+      type: Number,
+      required: true,
+    },
 
     stock: {
       type: Number,
@@ -40,12 +45,11 @@ const productSchema = new mongoose.Schema(
       gender: { type: String, required: true },
     },
     attributes: {
-      skinConcern:{type:String, enum: ["acne", "dry", "oily", "sensitive", "pigmentation", "anti-aging", "dark-spots"]},
-       skinType: {
-      type: [String],
-      enum: ["oily", "dry", "combination", "normal", "all skin"],
-      default: ["none"]
-    },
+      skinConcern: { type: String, enum: ["acne", "dry", "oily", "sensitive", "pigmentation", "anti-aging", "dark-spots"] },
+      skinType: {
+        type: [String],
+
+      },
       material: String,
       fit: String
     },
@@ -59,7 +63,7 @@ const productSchema = new mongoose.Schema(
     ],
 
     variants: [variantSchema],
-    soldCount:{type: Number, default: 0},
+    soldCount: { type: Number, default: 0 },
 
     baseVariant: {
       typeValues: { type: Object, required: true },
@@ -70,19 +74,19 @@ const productSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
-    discount:Number,
+    discount: Number,
     featured: { type: Boolean, default: false },
-    reviews:[{
+    reviews: [{
 
-     
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Review"
-      
+
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Review"
+
     }
 
     ]
   },
-  
+
   { timestamps: true }
 );
 

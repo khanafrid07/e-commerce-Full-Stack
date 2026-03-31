@@ -1,16 +1,12 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { ChevronRight, ShoppingBag, Sparkles } from "lucide-react";
-import PromotionalBanner from "../../PromotionalBanner";
 import BeautySection from "./BeautySection";
 import TrendingProducts from "../../TrendingProducts";
 import AccessoriesSection from "./AccessoriesSection";
 import FootwearSection from "./FootwearSection";
 import { motion } from "framer-motion";
-import CategoryBanner from "./CategoryBanner";
-import fashionBanner from "../../../assets/8277025.png"
-
+import CategoryBanners from "./CategoryBanners";
 export default function CategoryFilter() {
-
   const { category } = useParams();
   const navigate = useNavigate();
 
@@ -137,7 +133,7 @@ export default function CategoryFilter() {
             ))}
           </motion.div>
         </div>
-        <div className="p-8 space-y-4">
+        <div className=" space-y-4">
           <h1 className="text-2xl font-bold">Popular Products</h1>
           <TrendingProducts gender={gender} category={"clothes"} />
 
@@ -151,10 +147,7 @@ export default function CategoryFilter() {
       {category == "Fashion" && (
         <div>
 
-          <div className="h-[25vh] sm:h-[30vh] md:h-[40vh]  bg-cover bg-center"
-            style={{ backgroundImage: `url(${fashionBanner})` }}>
-
-          </div>
+          <CategoryBanners category="Fashion" />
           {category === "Fashion" && (
 
             <div className="max-w-9xl mx-auto px-4 md:px-6 py-8 ">
@@ -181,10 +174,6 @@ export default function CategoryFilter() {
         </div>
       )}
 
-
-
-
-
       {category === "Beauty" && (
         <BeautySection />
       )}
@@ -194,20 +183,6 @@ export default function CategoryFilter() {
       {category == "Footwear" && (
         <FootwearSection />
       )}
-
-
-      {/* <div className="bg-gradient-to-r from-purple-600 to-pink-600 py-16 mt-8 md:py-20 text-center">
-        <h3 className="text-3xl md:text-4xl font-black text-white mb-4">
-          Can't Find What You're Looking For?
-        </h3>
-        <p className="text-white/80 mb-8 text-lg">
-          Browse our complete collection or contact our support team for personalized recommendations
-        </p>
-        <button className="bg-white text-purple-600 font-bold px-8 py-3 rounded-full hover:shadow-lg transition-all duration-300 hover:scale-105">
-          View All Products
-        </button>
-      </div> */}
-
 
     </div>
 

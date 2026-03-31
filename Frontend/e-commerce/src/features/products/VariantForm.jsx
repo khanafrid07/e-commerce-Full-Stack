@@ -2,16 +2,16 @@ import { Trash2 } from "lucide-react";
 import VariantImageUpload from "./VariantImageUpload";
 import { VARIANT_OPTIONS, VARIANT_VALUES } from "./variantConfig";
 
-export default function VariantForm({ 
-  variant, 
-  variantIndex, 
-  category, 
-  onUpdate, 
+export default function VariantForm({
+  variant,
+  variantIndex,
+  category,
+  onUpdate,
   onDelete
 }) {
-  
+
   const handleFieldChange = (field, value) => {
-    const numericFields = ["price", "stock", "discount"];
+    const numericFields = ["price", "stock", "discount", "finalPrice"];
     const updatedValue = numericFields.includes(field) ? Number(value) || 0 : value;
     onUpdate({ ...variant, [field]: updatedValue });
   };
@@ -24,7 +24,7 @@ export default function VariantForm({
   };
 
   const handleImagesAdd = (files) => {
-    const newImages = files.map(file => ({ 
+    const newImages = files.map(file => ({
       file,
       url: null,
       fileName: null,
@@ -43,9 +43,6 @@ export default function VariantForm({
   const handleThumbnailSet = (imgIdx) => {
     onUpdate({ ...variant, thumbnailIndex: imgIdx });
   };
-
-  const finalPrice = variant.price - (variant.price * variant.discount) / 100;
-
   return (
     <div className="card bg-base-100 shadow-lg border border-base-300">
       <div className="card-body">
@@ -53,10 +50,10 @@ export default function VariantForm({
           <h3 className="card-title text-lg">
             Additional Variant {variantIndex}
           </h3>
-          
-          <button 
-            type="button" 
-            onClick={onDelete} 
+
+          <button
+            type="button"
+            onClick={onDelete}
             className="btn btn-error btn-sm gap-2"
           >
             <Trash2 size={16} />
@@ -136,7 +133,7 @@ export default function VariantForm({
             </label>
             <input
               type="number"
-              value={finalPrice.toFixed(2)}
+              value={variant.finalPrice = variant.price - (variant.price * variant.discount) / 100}
               readOnly
               className="input input-bordered w-full bg-base-200"
             />
@@ -144,7 +141,7 @@ export default function VariantForm({
         </div>
 
         <div className="divider"></div>
-        
+
         <VariantImageUpload
           images={variant.images}
           maxImages={5}

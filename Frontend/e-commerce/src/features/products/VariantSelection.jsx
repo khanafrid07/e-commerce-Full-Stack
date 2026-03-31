@@ -4,11 +4,11 @@ import { Plus, Copy } from "lucide-react";
 import VariantForm from "./VariantForm";
 import { VARIANT_OPTIONS } from "./variantConfig";
 
-export default function VariantSelection({ 
-  formData, 
-  variants, 
-  setVariants, 
-  isEditing = false 
+export default function VariantSelection({
+  formData,
+  variants,
+  setVariants,
+  isEditing = false
 }) {
   const selectedCategory = formData?.category?.main;
   const [selectedVariantIndex, setSelectedVariantIndex] = useState(0);
@@ -24,10 +24,11 @@ export default function VariantSelection({
   // Add single variant
   const addVariant = () => {
     if (!selectedCategory) return;
-    
+
     const newVariant = {
       typeValues: VARIANT_OPTIONS[selectedCategory].reduce((obj, key) => ({ ...obj, [key]: "" }), {}),
       price: 0,
+      finalPrice: 0,
       stock: 0,
       discount: 0,
       images: [],
@@ -37,10 +38,6 @@ export default function VariantSelection({
     setSelectedVariantIndex(variants.length);
   };
 
-  // Quick add multiple variants
-  const quickAddVariants = () => {
-    setShowQuickAdd(true);
-  };
 
   // Update variant
   const updateVariant = (index, updatedVariant) => {
@@ -53,7 +50,7 @@ export default function VariantSelection({
   const deleteVariant = (index) => {
     const updated = variants.filter((_, idx) => idx !== index);
     setVariants(updated);
-    
+
     if (selectedVariantIndex >= updated.length && updated.length > 0) {
       setSelectedVariantIndex(updated.length - 1);
     } else if (updated.length === 0) {
@@ -67,7 +64,7 @@ export default function VariantSelection({
     const newVariant = {
       ...variantToDuplicate,
       typeValues: { ...variantToDuplicate.typeValues },
-      images: [], // Don't copy images
+      images: [],
     };
     setVariants([...variants, newVariant]);
     setSelectedVariantIndex(variants.length);
@@ -94,21 +91,21 @@ export default function VariantSelection({
           <h2 className="text-xl font-bold">Additional Variants</h2>
           <p className="text-sm opacity-60">Create more product combinations (Optional)</p>
         </div>
-        
+
         <div className="flex gap-2">
-          <button 
-            type="button" 
-            onClick={addVariant} 
+          <button
+            type="button"
+            onClick={addVariant}
             className="btn btn-primary btn-sm gap-2"
           >
             <Plus size={18} />
             Add Variant
           </button>
-          
+
           {variants.length > 0 && (
-            <button 
-              type="button" 
-              onClick={() => duplicateVariant(selectedVariantIndex)} 
+            <button
+              type="button"
+              onClick={() => duplicateVariant(selectedVariantIndex)}
               className="btn btn-outline btn-sm gap-2"
               title="Duplicate current variant"
             >
@@ -170,7 +167,7 @@ export default function VariantSelection({
             <div className="stat-value text-primary">{variants.length}</div>
             <div className="stat-desc">Plus 1 base variant</div>
           </div>
-          
+
           <div className="stat">
             <div className="stat-title">Total Stock</div>
             <div className="stat-value text-secondary">
@@ -178,11 +175,11 @@ export default function VariantSelection({
             </div>
             <div className="stat-desc">From additional variants</div>
           </div>
-          
+
           <div className="stat">
             <div className="stat-title">Avg Price</div>
             <div className="stat-value text-accent">
-              ₹{variants.length > 0 
+              ₹{variants.length > 0
                 ? (variants.reduce((sum, v) => sum + (Number(v.price) || 0), 0) / variants.length).toFixed(0)
                 : 0}
             </div>

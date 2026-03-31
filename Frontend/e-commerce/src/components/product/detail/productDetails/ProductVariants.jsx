@@ -83,7 +83,7 @@ export default function ProductVariants({images, info, noMatch, allVariant = {},
 
 
 
-                            <button onClick={() => handleSelect(key, val)} key={i} className={`px-3 py-1 border rounded-lg w-16 transition ${!isAvailable && "line-through bg-gray-400 hover:scale-100 transition hover:bg-gray-500"}
+                            <button onClick={() => handleSelect(key, val)} key={i} className={`px-3  py-1 border text-center rounded-lg w-16 transition ${!isAvailable && "line-through bg-gray-400 hover:scale-100 transition hover:bg-gray-500"}
                               ${selectedVariant[key] === val ? "bg-blue-600 text-white border-blue-700" : "bg-blue-50 border-blue-400 hover:scale-105 hover:bg-blue-100"}`}>{val}</button>
                         )
                     })}

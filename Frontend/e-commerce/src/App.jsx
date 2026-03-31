@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { fetchUser } from "./features/auth/authSlice";
 import UserLayout from "./Pages/UserLayout";
-import Cart from "./components/Cart";
+import Cart from "./features/cart/Cart.jsx"
 import Checkout from "./Pages/Checkout";
 import Payment from "./Pages/Payment";
 import Order from "./components/User/Order";
@@ -21,8 +21,9 @@ import CategoryFilter from "./components/product/Cateogry/CateogryFilter";
 import ProductDetail from "./components/product/detail/productDetails/ProductDetail";
 import ProductListing from "./components/product/ProductListing";
 import ProtectedRoute from "./components/ProtectedRote"
-import Banner from "./features/Banners/Banner";
-import BannerForm from "./features/Banners/components/BannerForm";
+import BannerManagement from "./features/Banners/BannerManagement.jsx";
+import BannerFormPage from "./features/Banners/BannerFormPage.jsx";
+
 import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js";
 
@@ -67,8 +68,10 @@ function AppContent() {
         <Route path="update-product/:id" element={<UpdateProduct />} />
         <Route path="orders" element={<AdminOrder />} />
         <Route path="orders/:id" element={<OrderDetails />} />
-        <Route path="banners" element={<Banner />} />
-        <Route path="banners/create" element={<BannerForm />} />
+        <Route path="banners" element={<BannerManagement />} />
+        <Route path="banners/create" element={<BannerFormPage />} />
+        <Route path="banners/edit/:id" element={<BannerFormPage />} />
+        
       </Route>
     </Routes>
   );
