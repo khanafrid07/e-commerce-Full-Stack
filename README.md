@@ -1,7 +1,7 @@
 ##Full Stack e-commerce Website 
 
 #Description
-I am currently building this  fully functional e-commerce websitr with MERN STACK
+I am currently building this  fully functional e-commerce e with MERN STACK
 
 
 ##TECH USED:
@@ -10,3 +10,4 @@ I am currently building this  fully functional e-commerce websitr with MERN STAC
 -JAVASCRIPT,
 -REDUX RTK QUERY
 -motion-framer
+daisy ui
