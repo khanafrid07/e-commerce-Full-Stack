@@ -1,15 +1,30 @@
 const mongoose = require("mongoose");
 
 const variantSchema = new mongoose.Schema({
-  typeValues: { type: Object, required: true },
-  stock: { type: Number, default: 0 },
-  price: { type: Number, default: 0 },
-  images: [{ url: String, fileName: String }],
-  thumbnailIndex: { type: Number, default: 0 },
-  discount: { type: Number, default: 0 }
+  attributes: {
+    type: Object, // flexible for all product types
+    required: true,
+  },
+
+  price: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+
+  stock: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+
+  images: [
+    {
+      url: String,
+      fileName: String,
+    },
+  ],
 });
-
-
 
 const productSchema = new mongoose.Schema(
   {
@@ -28,69 +43,40 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    
-    stock: {
-      type: Number,
-      default: 0,
-    },
 
     category: {
-      main: { type: String, required: true },
-      sub: { type: String, required: true },
-      gender: { type: String, required: true },
-    },
-    attributes: {
-      skinConcern: { type: String, enum: ["acne", "dry", "oily", "sensitive", "pigmentation", "anti-aging", "dark-spots"] },
-      skinType: {
-        type: [String],
-
-      },
-      material: String,
-      fit: String
+      main: String,
+      sub: String,
+      gender: String,
     },
 
     images: [
       {
         url: { type: String, required: true },
         isMain: { type: Boolean, default: false },
-        fileName: String
-      }
+      },
     ],
 
     variants: [variantSchema],
-    soldCount: { type: Number, default: 0 },
 
-    baseVariant: {
-      typeValues: { type: Object, required: true },
-      price: Number,
-      stock: Number
-    },
     isActive: {
       type: Boolean,
       default: true,
     },
-    discount: Number,
-    featured: { type: Boolean, default: false },
-    reviews: [{
 
+    soldCount: {
+      type: Number,
+      default: 0,
+    },
 
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Review"
-
-    }
-
-    ]
+    reviews: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Review",
+      },
+    ],
   },
-
   { timestamps: true }
 );
-
-productSchema.index({
-  title: "text",
-  description: "text",
-  "category.main": "text",
-  "category.sub": "text",
-  "category.gender": "text"
-});
 
 module.exports = mongoose.model("Product", productSchema);
