@@ -11,6 +11,10 @@ body {
   overflow-x: hidden;
 }
 
+#root {
+  width: 100%;
+}
+
 /* global.css */
 .no-scrollbar::-webkit-scrollbar {
   display: none;

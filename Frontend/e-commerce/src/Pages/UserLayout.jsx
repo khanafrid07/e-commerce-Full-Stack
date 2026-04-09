@@ -5,14 +5,14 @@ import { Outlet } from "react-router-dom";
 export default function UserLayout() {
   return (
     <>
-    <nav className="overflow-hidden">
+    <nav className="overflow-hidden w-full">
 
       <Navbar />
     </nav>
-      <main className="overflow-y-hidden py-2">
+      <main className="overflow-y-auto overflow-x-hidden w-full">
         <Outlet />
       </main>
-      <footer className="w-[100%]">
+      <footer className="w-full overflow-x-hidden">
 
       <Footer/>
       </footer>

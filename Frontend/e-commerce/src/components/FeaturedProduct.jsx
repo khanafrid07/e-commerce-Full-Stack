@@ -1,133 +1,94 @@
-import { useGetProductsQuery } from "../features/products/productSlice.js";
-import LandingCard from "./product/LandingCard.jsx";
-import { useEffect, useState, useRef } from "react";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
-export default function FeaturedProduct({ category }) {
-  const [group, setGroup] = useState(0);
-  const { data, isLoading, isError } = useGetProductsQuery({ sort: "featured", limit: 12, category });
-  const allProducts = data?.allProducts || [];
+import { useGetProductsQuery } from "../features/products/productSlice";
+import ProductCard from "./product/ProductCard";
+import { ArrowRight, Loader2, Zap, ChevronLeft, ChevronRight } from "lucide-react";
+import { useRef } from "react";
 
-  let groupSize = 2;
-  const totalGroup = Math.ceil(allProducts.length / groupSize);
+export default function FeaturedProduct() {
+  const { isLoading, isError, data } = useGetProductsQuery({
+    sort: "featured",
+    limit: 10,
+  });
 
-  // Auto-slide
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setGroup(prev => (prev + 1) % totalGroup);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [totalGroup]);
+  const scrollRef = useRef();
+  const { allProducts = [] } = data || {};
 
-  const visibleProduct = allProducts.slice(group * groupSize, group * groupSize + groupSize);
+  const scroll = (dir) => {
+    if (!scrollRef.current) return;
 
-  // Swipe support
-  const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
+    const width = scrollRef.current.clientWidth;
 
-  const handleTouchStart = (e) => {
-    touchStartX.current = e.changedTouches[0].screenX;
+    scrollRef.current.scrollBy({
+      left: dir === "left" ? -width : width,
+      behavior: "smooth",
+    });
   };
 
-  const handleTouchEnd = (e) => {
-    touchEndX.current = e.changedTouches[0].screenX;
-    const deltaX = touchEndX.current - touchStartX.current;
-
-    if (deltaX > 50) {
-      setGroup(prev => (prev - 1 + totalGroup) % totalGroup);
-    } else if (deltaX < -50) {
-      setGroup(prev => (prev + 1) % totalGroup);
-    }
-  };
-
-  const handlePrevious = () => {
-    setGroup(prev => (prev - 1 + totalGroup) % totalGroup);
-  };
-
-  const handleNext = () => {
-    setGroup(prev => (prev + 1) % totalGroup);
-  };
-
-  if (isLoading)
+  if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-96 bg-gradient-to-br from-blue-50 to-indigo-100">
-        <div className="text-center">
-          <div className="loading loading-spinner loading-lg text-purple-600 mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading featured products...</p>
-        </div>
+      <div className="flex justify-center items-center h-60">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
-
-  if (isError)
-    return (
-      <div className="text-center text-red-500 py-16 bg-gradient-to-br from-red-50 to-pink-100">
-        <p className="font-semibold text-lg">Failed to load featured products</p>
-      </div>
-    );
+  }
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="space-y-6 py-4 px-4 sm:px-6 md:px-8">
 
-
-      <div className="max-w-9xl mx-auto px-2">
-
-        <div className="relative group">
-
-          {/* Main carousel */}
-          <div
-            className=" rounded-2xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl"
-            onTouchStart={handleTouchStart}
-            onTouchEnd={handleTouchEnd}
-          >
-
-            <div className="p-4 sm:p-6 md:p-6 lg:p-8">
-              <motion.div initial={{ opacity: 0, y: 50 }} whileInView={{ opacity: 1, y: 0 }} transition={{ duration: 1.3 }}>
-                <LandingCard featured products={visibleProduct} />
-
-              </motion.div>
-            </div>
-          </div>
-
-          {/* Navigation Arrows */}
-          <button
-            onClick={handlePrevious}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 sm:-translate-x-6 z-20 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 opacity-0 group-hover:opacity-100"
-            aria-label="Previous product"
-          >
-            <ChevronLeft className="text-purple-600" size={24} />
-          </button>
-
-          <button
-            onClick={handleNext}
-            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 sm:translate-x-6 z-20 bg-white rounded-full p-3 shadow-lg hover:shadow-xl hover:scale-110 transition-all duration-300 opacity-0 group-hover:opacity-100"
-            aria-label="Next product"
-          >
-            <ChevronRight className="text-purple-600" size={24} />
-          </button>
-        </div>
-
-        {/* Carousel Indicators */}
-        <div className="flex justify-center items-center gap-3 mt-8">
-          {Array.from({ length: totalGroup }).map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setGroup(index)}
-              className={`transition-all duration-300 rounded-full ${index === group
-                  ? "bg-gradient-to-r from-purple-600 to-pink-600 w-8 h-3"
-                  : "bg-gray-300 hover:bg-gray-400 w-3 h-3"
-                }`}
-              aria-label={`Go to product ${index + 1}`}
-            />
-          ))}
-        </div>
-
-        {/* Optional: Product counter */}
-        <div className="text-center mt-6">
-          <p className="text-sm text-gray-600">
-            <span className="font-semibold text-purple-600">{group + 1}</span> of{" "}
-            <span className="font-semibold">{totalGroup}</span> products
+      {/* Header */}
+      <div className="flex justify-between items-end">
+        <div>
+          <h2 className="text-3xl sm:text-4xl font-semibold">Featured</h2>
+          <p className="text-base-content/60 text-sm sm:text-base">
+            The pieces everyone is talking about.
           </p>
         </div>
+
+        <button className="text-sm font-semibold flex items-center gap-2 group">
+          View All
+          <ArrowRight size={16} className="group-hover:translate-x-1 transition" />
+        </button>
+      </div>
+
+      {/* Scroll Section */}
+      <div className="relative group">
+
+        {/* Products Row */}
+        <div
+          ref={scrollRef}
+          className="flex overflow-hidden py-2 gap-6 overflow-x-auto scrollbar-hide snap-x snap-mandatory"
+        >
+          {allProducts.length > 0 ? (
+            allProducts.map((product) => (
+              <div
+                key={product._id}
+                className="min-w-[200px] sm:min-w-[220px] md:min-w-[240px] flex-shrink-0 h-72 sm:h-80"
+              >
+                <ProductCard product={product} featured={true}/>
+              </div>
+            ))
+          ) : (
+            <div className="w-full flex flex-col items-center justify-center py-10">
+              <Zap className="text-purple-500 mb-3" size={32} />
+              <p className="text-gray-500">No Featured Products</p>
+            </div>
+          )}
+        </div>
+
+        {/* Arrows */}
+        <button
+          onClick={() => scroll("left")}
+          className="hidden md:flex absolute left-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow opacity-0 group-hover:opacity-100 transition"
+        >
+          <ChevronLeft />
+        </button>
+
+        <button
+          onClick={() => scroll("right")}
+          className="hidden md:flex absolute right-2 top-1/2 -translate-y-1/2 bg-white p-2 rounded-full shadow opacity-0 group-hover:opacity-100 transition"
+        >
+          <ChevronRight />
+        </button>
+
       </div>
     </section>
   );

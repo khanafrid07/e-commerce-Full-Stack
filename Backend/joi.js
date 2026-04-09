@@ -10,7 +10,7 @@ const userSchema = Joi.object({
 const productSchema = Joi.object({
   title: Joi.string().min(5).required(),
   description: Joi.string().min(6).required(),
-  price: Joi.number().min(1).required(),
+  basePrice: Joi.number().min(1).required(),
   stock: Joi.number().min(1).required(),
   images: Joi.array().items(Joi.object()).min(1).required(),
   category: Joi.object({

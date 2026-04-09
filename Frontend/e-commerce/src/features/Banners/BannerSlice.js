@@ -14,12 +14,12 @@ export const bannerApi = createApi({
     tagTypes: ["banners"],
     endpoints: (builder) => ({
         getBanner: builder.query({
-            query: ({ type, category, isAdmin } = {}) => {
+            query: ({ type, category, status } = {}) => {
                 let query = "/banners?";
 
                 if (type) query += `type=${type}&`;
                 if (category) query += `category=${category}&`;
-                if (isAdmin) query += `isAdmin=${isAdmin}&`;
+                if (status) query += `status=${status}&`;
 
                 return { url: query };
             },

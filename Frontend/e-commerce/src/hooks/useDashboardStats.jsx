@@ -15,6 +15,7 @@ export default function useDashboardStats() {
         totalCustomer: data?.totalUser || 0,
         topProducts: data?.topSellingProducts || [],
         cartCount: data?.cartCount || 0,
+        bannersCount: data?.bannersCount || {},
         isLoading,
         isError
     }

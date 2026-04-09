@@ -5,18 +5,17 @@ import { useParams } from "react-router-dom";
 import Alert from "../../../Alert";
 import { useSelector } from "react-redux";
 
-export default function ProductVariants({images, info, noMatch, allVariant = {}, setSelectedVariant, selectedVariant, availableOption }) {
+export default function ProductVariants({ images, info, noMatch, allVariant = {}, variantId, setSelectedVariant, selectedVariant, availableOption }) {
 
-    const {token} = useSelector((state)=>state.auth)
-    const [addToCart, {isLoading: loading}]  = useAddToCartMutation()
-    const {id}  = useParams()
+    const { token } = useSelector((state) => state.auth)
+    const [addToCart, { isLoading: loading }] = useAddToCartMutation()
+    const { id } = useParams()
     console.log(allVariant, "varinat also coming")
     if (!allVariant || Object.keys(allVariant).length === 0) {
         return <p>No variants available</p>;
     }
-    
-    const finalPrice = info.price - (info.price * info.discount) / 100;
 
+    const finalPrice = info.finalPrice
     const handleSelect = (type, value) => {
         setSelectedVariant((prev) => ({
             ...prev, [type]: value
@@ -26,44 +25,65 @@ export default function ProductVariants({images, info, noMatch, allVariant = {},
 
     }
 
-    const handleCartSubmit = async()=>{
-        if(noMatch) return
-        const cartData  = {
-            productId: id,
-            variants: selectedVariant,
-            price: finalPrice,
-            quantity: 1,
-            images: images,
-            title: info.title
-        }
-       if(!token){
-        localStorage.removeItem("cart")
-        const existingCart = JSON.parse(localStorage.getItem("cart")) || []
-        const existingItem = existingCart.find((item)=>item.productId===id && JSON.stringify(item.variants)===JSON.stringify(selectedVariant))
-        if(existingItem){
-            existingItem.quantity++
-        }else{
-            existingCart.push(cartData)
-        }
-        localStorage.setItem("cart", JSON.stringify(existingCart))
-       }
-
-        try{
-            addToCart(cartData).unwrap()
-            return <Alert message={"Added to Cart"} type="success"/>
+    const handleCartSubmit = async () => {
+        if (noMatch) return
+        
+        if (!token) {
+            // Local cart logic - check if item already exists
+            const localCartData = {
+                productId: id,
+                variant: selectedVariant,
+                basePrice: info.basePrice,
+                discount: info.discount || 0,
+                price: finalPrice,  // This is the discounted price
+                quantity: 1,
+                variantImages: images,
+                title: info.title,
+                variantId: variantId
+            }
+            const existingCart = JSON.parse(localStorage.getItem("cart")) || []
             
-        }catch(err){
-            console.log(err, "error adding Cart")
+            // Check for existing item with same product and variant
+            const existingItem = existingCart.find((item) => {
+                const isSameProduct = item.productId === id
+                const isSameVariant = JSON.stringify(item.variant || {}) === JSON.stringify(selectedVariant)
+                return isSameProduct && isSameVariant
+            })
+            
+            if (existingItem) {
+                existingItem.quantity += 1
+                console.log(`Item already exists, updating quantity to ${existingItem.quantity}`)
+                alert(`Quantity updated to ${existingItem.quantity}`)
+            } else {
+                existingCart.push(localCartData)
+                console.log("New item added to cart")
+                alert("Added to cart successfully")
+            }
+            localStorage.setItem("cart", JSON.stringify(existingCart))
+            return
         }
-
-
+        
+        // Server cart logic - backend will handle checking existing items
+        try {
+            const sanitizedData = {
+                productId: id,
+                variants: selectedVariant,
+                quantity: 1,
+            }
+            console.log("Adding to server cart:", sanitizedData)
+            await addToCart(sanitizedData).unwrap()
+            alert("Added to cart successfully")
+        } catch (err) {
+            console.log(err, "error adding to cart")
+            alert("Error adding to cart: " + (err?.data?.message || err.message))
+        }
     }
 
 
 
     return (
         <div>
-           
+
             <h2 className="font-semibold text-xl">Available Variants</h2>
             {noMatch && (
                 <p className="text-red-600  mt-2 shake">
@@ -89,7 +109,7 @@ export default function ProductVariants({images, info, noMatch, allVariant = {},
                     })}
                 </div>
             ))}
-            <CartAndPrice noMatch={noMatch} loading = {loading} stock={info.stock} handleCart = {handleCartSubmit}/>
+            <CartAndPrice noMatch={noMatch} loading={loading} stock={info.stock} handleCart={handleCartSubmit} />
         </div>
     )
 }

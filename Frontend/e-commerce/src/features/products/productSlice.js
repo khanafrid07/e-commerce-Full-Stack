@@ -26,14 +26,23 @@ export const ProductApi = createApi({
         url: "/products",
         params, 
       }),
-      providesTags:["Products"]
-
+      providesTags: (result, error, args) => {
+        if (result) {
+          return [
+            { type: "Products", id: "LIST" },
+            ...result.allProducts?.map(({ _id }) => ({ type: "Products", id: _id })) || [],
+          ];
+          
+        }
+        return [{ type: "Products", id: "LIST" }];
+        
+      },
+      
     }),
 
     viewProduct: builder.query({
       query: (id) => `/products/${id}`,
-      providesTags:["Products"]
-
+      providesTags: (result, error, id) => [{ type: "Products", id }],
     }),
 
   
@@ -44,7 +53,7 @@ export const ProductApi = createApi({
         body: newProduct,
       }),
 
-      invalidatesTags: ["Products"],
+      invalidatesTags: [{ type: "Products", id: "LIST" }],
     }),
 
    
@@ -55,7 +64,7 @@ export const ProductApi = createApi({
         body: data,
       }),
 
-      invalidatesTags: ["Products"]
+      invalidatesTags: [{ type: "Products", id: "LIST" }],
     }),
 
   
@@ -65,7 +74,7 @@ export const ProductApi = createApi({
         method: "DELETE",
       }),
 
-      invalidatesTags: ["Products"]
+      invalidatesTags: [{ type: "Products", id: "LIST" }],
     }),
   }),
 });

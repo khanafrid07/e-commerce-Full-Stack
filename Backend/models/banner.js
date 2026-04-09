@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const bannerSchema = new mongoose.Schema(
   {
-    
+
     title: {
       type: String,
       trim: true,
@@ -16,9 +16,9 @@ const bannerSchema = new mongoose.Schema(
       trim: true,
     },
 
-   
+
     image: {
-      type: String, // URL
+      type: String,
       required: true,
     },
 
@@ -31,7 +31,7 @@ const bannerSchema = new mongoose.Schema(
       trim: true,
     },
 
-   
+
     type: {
       type: String,
       enum: ["hero", "promo", "category"],
@@ -43,23 +43,21 @@ const bannerSchema = new mongoose.Schema(
       enum: ["home_top", "home_middle", "home_bottom"],
     },
 
-   category:String,
+    category: String,
 
-    
+
     template: {
       type: String,
       enum: [
-        "none",
-        "light-overlay",
-        "dark-overlay",
-        "left-dark",
-        "center-light",
-        "overlay-gradient",
-        "gradient-right",
-        "card-overlay",
-        "minimal",
+        "clean_image",
+        "split_banner",
+        "hero_dark",
+        "center_minimal",
+        "left_overlay",
+        "gradient_promo"
       ],
       required: true,
+      default: "clean_image"
     },
 
     priority: {
@@ -70,23 +68,17 @@ const bannerSchema = new mongoose.Schema(
     startDate: Date,
     endDate: Date,
 
-    // Status
+
     isActive: {
       type: Boolean,
       default: true,
     },
+    schedule: {
+      startDate: Date,
+      endDate: Date,
+    }
 
-    // 🎨 TEXT STYLING (Lightweight options)
-    textColor: {
-      type: String,
-      enum: ["white", "dark", "gray"],
-      default: "white",
-    },
-    ctaButtonColor: {
-      type: String,
-      enum: ["blue", "red", "green", "purple", "black"],
-      default: "blue",
-    },
+
   },
   { timestamps: true }
 );

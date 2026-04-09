@@ -34,8 +34,8 @@ export default function Category() {
     const progress = ((activeIndex + 1) / category.length) * 100;
 
     return (
-        <section className="px-4 md:px-10 py-10">
-            <h1 className="text-2xl md:text-3xl font-bold mb-6">
+        <section id="category" className="px-4 md:px-10 py-10">
+            <h1  className="text-2xl md:text-3xl font-bold mb-6">
                 Shop by Category
             </h1>
 

@@ -1,7 +1,7 @@
 export default function Footer() {
     return (
 
-        <div className="bg-gray-400 w-full flex justify-between py-8 px-6 mt-8">
+        <div className="bg-gray-400 w-full flex flex-col md:flex-row md:justify-between gap-6 md:gap-8 py-8 px-4 sm:px-6 mt-8">
             <div>
                 <ul>SHOP
                     <li>New Arrivals</li>

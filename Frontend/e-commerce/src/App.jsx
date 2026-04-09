@@ -21,11 +21,11 @@ import CategoryFilter from "./components/product/Cateogry/CateogryFilter";
 import ProductDetail from "./components/product/detail/productDetails/ProductDetail";
 import ProductListing from "./components/product/ProductListing";
 import ProtectedRoute from "./components/ProtectedRote"
-import BannerManagement from "./features/Banners/BannerManagement.jsx";
-import BannerFormPage from "./features/Banners/BannerFormPage.jsx";
 
 import { Elements } from "@stripe/react-stripe-js"
 import { loadStripe } from "@stripe/stripe-js";
+import BannerForm from "./features/Banners/BannerForm.jsx";
+import BannerManagement from "./features/Banners/BannerManagement.jsx";
 
 const stripePromise = loadStripe("pk_test_51QlWeFQemhG2QfvsGG1PqGASRwoKpb3CV9iBeVeHpYYiDiXApNSn2i9YiHUU3XiLRb7QPXem90utPmVVJ5f0Ewoh00shYEBk3E")
 
@@ -68,10 +68,10 @@ function AppContent() {
         <Route path="update-product/:id" element={<UpdateProduct />} />
         <Route path="orders" element={<AdminOrder />} />
         <Route path="orders/:id" element={<OrderDetails />} />
-        <Route path="banners" element={<BannerManagement />} />
-        <Route path="banners/create" element={<BannerFormPage />} />
-        <Route path="banners/edit/:id" element={<BannerFormPage />} />
-        
+        <Route path="banners" element={<BannerManagement/>} />
+        <Route path="banners/create" element={<BannerForm/>}/> 
+       <Route path="banners/:id/edit" element={<BannerForm/>}/> 
+
       </Route>
     </Routes>
   );

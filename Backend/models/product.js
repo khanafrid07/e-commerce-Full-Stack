@@ -4,7 +4,6 @@ const variantSchema = new mongoose.Schema({
   typeValues: { type: Object, required: true },
   stock: { type: Number, default: 0 },
   price: { type: Number, default: 0 },
-  finalPrice: { type: Number, default: 0 },
   images: [{ url: String, fileName: String }],
   thumbnailIndex: { type: Number, default: 0 },
   discount: { type: Number, default: 0 }
@@ -29,11 +28,7 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    finalPrice: {
-      type: Number,
-      required: true,
-    },
-
+    
     stock: {
       type: Number,
       default: 0,

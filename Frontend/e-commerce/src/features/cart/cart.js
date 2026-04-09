@@ -25,10 +25,10 @@ export const cartApi = createApi({
 
     // FIXED: Changed selectedVariant → variants
     addToCart: builder.mutation({
-      query: ({ productId, quantity, variants, price }) => ({
+      query: ({ productId, quantity, variants }) => ({
         url: "/add",
         method: "POST",
-        body: { productId, quantity, variants, price },
+        body: { productId, quantity, variants },
       }),
       invalidatesTags: ["Cart"],
     }),

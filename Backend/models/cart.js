@@ -20,9 +20,22 @@ const cartSchema = new mongoose.Schema(
           min: 1,
           default: 1,
         },
+        basePrice: {
+          type: Number,
+          required: true,
+        },
+        discount: {
+          type: Number,
+          default: 0,
+        },
         price: {
           type: Number, 
           required: true,
+        },
+        stock: {
+          type: Number,
+          required: true,
+          default: 0,
         },
         variant: {
           type: Object,

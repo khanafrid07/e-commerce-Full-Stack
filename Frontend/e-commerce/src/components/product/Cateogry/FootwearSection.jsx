@@ -1,12 +1,15 @@
 import { useNavigate } from "react-router-dom";
-import { Footprints, Mountain, Briefcase, Flame, ArrowRight, Zap } from "lucide-react";
+import { Footprints, Mountain, Briefcase, Flame, ArrowRight, Zap, Sparkles } from "lucide-react";
 import PromotionalBanner from "../../PromotionalBanner";
 import TrendingProducts from "../../TrendingProducts";
-
+import BannerSlot from "../../../features/Banners/BannerSlot";
 import { motion } from "framer-motion";
+import { useGetBannerQuery } from "../../../features/Banners/BannerSlice";
+import NewArrivals from "../../NewArrivals";
 
 export default function FootwearSection() {
   const navigate = useNavigate();
+  const { data: bannerData, isLoading: bannerLoading } = useGetBannerQuery({ type: "category", category: "footwear" });
 
   const footwear = {
     men: [
@@ -62,98 +65,122 @@ export default function FootwearSection() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ delay: index * 0.1, duration: 0.5 }}
+        viewport={{ once: true, margin: "-100px" }}
+        transition={{ delay: index * 0.12, duration: 0.6, ease: "easeOut" }}
         key={`${gender}-${item.type}`}
         onClick={() => navigate(`/products?category=footwear&gender=${gender}&type=${item.type}`)}
-        className="group relative h-72 sm:h-80 md:h-[22rem] rounded-3xl overflow-hidden cursor-pointer shadow-sm hover:shadow-2xl transition-all duration-500 bg-white"
+        className="group relative h-72 sm:h-80 md:h-96 rounded-2xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-500 bg-white"
       >
-        {/* Background Image */}
+        {/* Background Image with Blur effect */}
         <div className="absolute inset-0 overflow-hidden">
           <img
             src={item.image}
             alt={item.label}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+            className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
           />
-          {/* Gradient Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
+          {/* Multi-layer overlay for better text contrast */}
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-950/95 via-gray-900/50 to-transparent opacity-75 group-hover:opacity-85 transition-opacity duration-500" />
+          <div className="absolute inset-0 backdrop-blur-0 group-hover:backdrop-blur-[2px] transition-all duration-500" />
         </div>
 
-        {/* Floating Icon Badge */}
-        <div className="absolute top-4 right-4 p-3 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white group-hover:bg-white/30 transition-all duration-500 transform group-hover:rotate-12 group-hover:scale-110 shadow-lg">
-          {item.icon}
+        {/* Floating Animated Badge */}
+        <div className="absolute top-5 right-5 p-3 rounded-full bg-white/25 backdrop-blur-xl border border-white/40 text-white group-hover:bg-white/35 transition-all duration-500 transform group-hover:rotate-12 group-hover:scale-125 shadow-xl">
+          <motion.div whileHover={{ rotate: 20 }} transition={{ duration: 0.3 }}>
+            {item.icon}
+          </motion.div>
         </div>
+
+        {/* Accent line */}
+        <div className="absolute top-0 left-0 w-20 h-1 bg-gradient-to-r from-amber-400 to-transparent group-hover:w-32 transition-all duration-500" />
 
         {/* Content */}
-        <div className="absolute inset-0 flex flex-col justify-end p-5 md:p-6 text-white text-left">
-          <h3 className="text-2xl sm:text-3xl font-extrabold mb-1 group-hover:-translate-y-1 transition-transform duration-500 tracking-tight">
-            {item.label}
-          </h3>
-          <p className="text-xs sm:text-sm text-white/80 mb-5 group-hover:text-white transition-colors duration-500 line-clamp-2">
-            {item.description}
-          </p>
+        <div className="absolute inset-0 flex flex-col justify-end p-6 md:p-7 text-white text-left">
+          <motion.div
+            initial={{ y: 10, opacity: 0 }}
+            whileInView={{ y: 0, opacity: 1 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+            viewport={{ once: true }}
+          >
+            <h3 className="text-2xl sm:text-3xl md:text-4xl font-black mb-2 group-hover:-translate-y-2 transition-transform duration-500 tracking-tight">
+              {item.label}
+            </h3>
+            <p className="text-xs sm:text-sm text-white/85 mb-6 group-hover:text-white transition-colors duration-500 line-clamp-2 font-medium">
+              {item.description}
+            </p>
 
-          {/* Minimalist Shop Button */}
-          <button className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-white group-hover:text-amber-300 transition-colors duration-300 w-fit">
-            <span>Explore</span>
-            <ArrowRight size={18} className="group-hover:translate-x-2 transition-transform duration-300" />
-          </button>
+            {/* Premium Shop Button */}
+            <motion.button
+              whileHover={{ x: 4 }}
+              whileTap={{ scale: 0.98 }}
+              className="flex items-center gap-2.5 text-sm font-bold uppercase tracking-wider text-white group-hover:text-amber-300 transition-colors duration-300 w-fit group-hover:gap-3"
+            >
+              <span>Shop Now</span>
+              <motion.div
+                className="bg-white/20 p-1.5 rounded-full"
+                whileHover={{ rotate: 45 }}
+                transition={{ duration: 0.3 }}
+              >
+                <ArrowRight size={16} />
+              </motion.div>
+            </motion.button>
+          </motion.div>
         </div>
+
+        {/* Corner decoration */}
+        <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-tl from-white/10 to-transparent rounded-tl-2xl group-hover:w-20 group-hover:h-20 transition-all duration-500" />
       </motion.div>
     ));
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-16">
-      {/* ── Dynamic Category Banner Hero ── */}
-      <CategoryBanner />
+    <div className="bg-gradient-to-br from-slate-50 via-white to-slate-50 min-h-screen pb-20">
+      {/* ── TOP BANNER ── */}
+      {bannerData && bannerData.length > 0 && (
+        <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-6 pt-4">
+          <BannerSlot placement={"home_top"} banners={bannerData} rounded={true} />
+        </div>
+      )}
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-10 md:mt-16">
+      <div className="max-w-9xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 md:mt-20">
 
         {/* ── Trending Section ── */}
-        <section className="mb-20">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
-            <div>
-              <div className="inline-flex gap-2 items-center text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest mb-3">
-                <Zap size={14} className="fill-amber-600" />
-                <span>Hot Right Now</span>
-              </div>
-              <h2 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
-                Trending Footwear
-              </h2>
-            </div>
-            <button
-              onClick={() => navigate('/products?category=footwear')}
-              className="text-sm font-bold uppercase tracking-widest text-gray-600 hover:text-blue-600 transition-colors flex items-center gap-2 group w-fit"
-            >
-              Shop All
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </button>
-          </div>
-          {/* We assume footwear is stored with category "footwear" */}
-          <TrendingProducts category={"footwear"} />
+        <section className="mb-24">
+          <TrendingProducts  />
         </section>
 
         {/* ── MEN'S COLLECTION ── */}
-        <section className="mb-20">
-          <div className="flex items-center gap-3 mb-8">
-            <h3 className="text-3xl md:text-4xl font-extrabold text-gray-900">Men's Classics</h3>
-            <div className="h-px bg-gray-200 flex-1 ml-4 hidden sm:block"></div>
+        <section className="mb-28">
+          <div className="flex items-center gap-3 mb-12 md:mb-16">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-3.5 sm:p-4 rounded-2xl shadow-lg">
+              <Footprints className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-widest">Premium Collection</p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700 mt-1">
+                Men's Footwear
+              </h2>
+            </div>
+            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 hidden md:block" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {renderCards(footwear.men, "men")}
           </div>
         </section>
-
-        {/* ── PROMO BANNER ── */}
-        <div className="mb-20 rounded-[2rem] overflow-hidden shadow-2xl relative">
-          <PromotionalBanner placement="category_middle" />
-        </div>
+         <NewArrivals/>
+        
 
         {/* ── WOMEN'S COLLECTION ── */}
         <section className="mb-20">
-          <div className="flex items-center gap-3 mb-8">
-            <h3 className="text-3xl md:text-4xl font-extrabold text-gray-900">Women's Collection</h3>
-            <div className="h-px bg-gray-200 flex-1 ml-4 hidden sm:block"></div>
+          <div className="flex items-center gap-3 mb-12 md:mb-16">
+            <div className="bg-gradient-to-r from-rose-600 to-pink-600 p-3.5 sm:p-4 rounded-2xl shadow-lg">
+              <Flame className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs sm:text-sm font-semibold text-gray-500 uppercase tracking-widest">Exclusive Range</p>
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700 mt-1">
+                Women's Footwear
+              </h2>
+            </div>
+            <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-rose-600 hidden md:block" />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
             {renderCards(footwear.women, "women")}

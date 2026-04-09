@@ -17,14 +17,14 @@ export default function Home() {
 
             <Hero />
             <CategorySection />
-            {/* <PromotionalBanner placement="home_middle" /> */}
-            {/* <FeaturedProduct/> */}
-            <NewArrivals />
-            <FashionCollection />
-            {/* <DiscoverCollections/> */}
-            <PromotionalBanner placement="home_middle" />
-
+            <FeaturedProduct/>
+          
             <TrendingProducts />
+            <FashionCollection />
+            <NewArrivals />
+           
+           
+
             <ViewedProduct />
             <OfferSignup />
 

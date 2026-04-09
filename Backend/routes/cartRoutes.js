@@ -9,12 +9,18 @@ function variantsMatch(variant1, variant2) {
   const v1 = variant1 || {};
   const v2 = variant2 || {};
 
+  // Convert both to JSON strings for deep comparison
   const keys1 = Object.keys(v1).sort();
   const keys2 = Object.keys(v2).sort();
 
   if (keys1.length !== keys2.length) return false;
 
-  return keys1.every(key => v1[key] === v2[key]);
+  // Check if all keys and values match
+  return keys1.every(key => {
+    const val1 = String(v1[key]).toLowerCase().trim();
+    const val2 = String(v2[key]).toLowerCase().trim();
+    return val1 === val2;
+  });
 }
 
 
@@ -32,16 +38,12 @@ router.get("/", verifyToken, async (req, res) => {
 
 router.post("/add", verifyToken, async (req, res) => {
   try {
-    const { productId, quantity = 1, variants = {}, price } = req.body;
+    const { productId, quantity = 1, variants = {} } = req.body;
 
-    console.log(" Adding to cart:", { productId, quantity, variants, price });
+    console.log("🛒 Adding to cart:", { productId, quantity, variants });
 
     const product = await Product.findById(productId);
     if (!product) return res.status(404).json({ message: "Product not found" });
-
-    if (!price || price <= 0) {
-      return res.status(400).json({ message: "Invalid price" });
-    }
 
     let cart = await Cart.findOne({ user: req.userId });
 
@@ -53,14 +55,16 @@ router.post("/add", verifyToken, async (req, res) => {
       });
     }
 
-
     let variantImages = product.images || [];
+    let basePrice = product.basePrice || 0;
+    let discount = product.discount || 0;
+    let price = product.basePrice || 0;  // finalPrice to display
+    let stock = product.stock || 0;
 
     const isBaseVariant = product.baseVariant &&
       Object.entries(variants).every(([k, v]) => product.baseVariant.typeValues?.[k] === v);
 
     if (!isBaseVariant && product.variants?.length > 0) {
-
       const matchedVariant = product.variants.find(v =>
         Object.entries(variants).every(([k, val]) => v.typeValues?.[k] === val)
       );
@@ -68,30 +72,44 @@ router.post("/add", verifyToken, async (req, res) => {
       if (matchedVariant && matchedVariant.images?.length > 0) {
         variantImages = matchedVariant.images;
       }
+      if (matchedVariant) {
+        basePrice = matchedVariant.price;
+        discount = matchedVariant.discount || 0;
+        price = matchedVariant.price;  // This will be updated below
+        stock = matchedVariant.stock || 0;  // Get stock from variant
+      }
+    } else if (isBaseVariant && product.baseVariant) {
+      stock = product.baseVariant.stock || 0;
     }
 
+    // Calculate final price after discount
+    const finalPrice = basePrice - (basePrice * discount / 100);
+    price = finalPrice;
 
+    // Find existing item - check both product ID AND variants
     const existingItem = cart.items.find((item) => {
-      if (item.product.toString() !== productId) return false;
-      return variantsMatch(item.variant, variants);
+      const sameProduct = item.product.toString() === productId || item.product._id?.toString() === productId;
+      const sameVariant = variantsMatch(item.variant, variants);
+      console.log(`Checking item: sameProduct=${sameProduct}, sameVariant=${sameVariant}, itemVariant=${JSON.stringify(item.variant)}, newVariant=${JSON.stringify(variants)}`);
+      return sameProduct && sameVariant;
     });
 
     if (existingItem) {
-  
+      console.log(`✅ Found existing item! Updating quantity from ${existingItem.quantity} to ${existingItem.quantity + quantity}`);
       existingItem.quantity += quantity;
     } else {
-
+      console.log("📦 No existing item found, creating new cart item");
       cart.items.push({
         product: productId,
         quantity,
         variant: variants,
-        price: price,
+        basePrice: basePrice,
+        discount: discount,
+        price: price,  // finalPrice after discount
+        stock: stock,  // Add stock info
         variantImages: variantImages.slice(0, 1)
       });
     }
-
-
-
 
     cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
 
@@ -100,24 +118,8 @@ router.post("/add", verifyToken, async (req, res) => {
 
     res.status(201).json(cart);
 
-
-    
-    cart.items.forEach((item, idx) => {
-      console.log(`   Item ${idx}:`, {
-        productId: item.product.toString(),
-        variant: item.variant,
-        variantsMatch: variantsMatch(item.variant, variants)
-      });
-    });
-
-    if (existingItem) {
-      console.log(" Found existing item:", existingItem.variant);
-    } else {
-      console.log(" No existing item found, creating new");
-    }
-
   } catch (err) {
-    console.error(" Error adding to cart:", err);
+    console.error("❌ Error adding to cart:", err);
     res.status(500).json({ message: "Error adding to cart", error: err.message });
   }
 });

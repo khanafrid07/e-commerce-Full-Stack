@@ -15,6 +15,7 @@ export default function ProductDetail() {
     const product = data?.product
     const [allVariant, setAllVariant] = useState({})
     const [selectedVariant, setSelectedVariant] = useState({})
+    const[variantId, setVariantId] = useState(null)
     const [noMatch, setNoMatch] = useState(false)
     const [info, setInfo] = useState({
         price: 0,
@@ -78,7 +79,7 @@ export default function ProductDetail() {
 
 
 
-    }, [product])
+    }, [data?.product])
     console.log(selectedVariant, "sel var")
 
 
@@ -94,12 +95,16 @@ export default function ProductDetail() {
             let matched = null
             if (isBaseMatch) {
                 matched = product.baseVariant
+                setVariantId("base")
             } else {
                 matched = product.variants.find((v) => (
+                    
                     Object.entries(v.typeValues).every(([key, value]) => (
                         selectedVariant[key] === value
                     ))
+                    
                 ))
+                setVariantId(matched?._id)
             }
             console.log(matched, "matched var")
             if (matched) {
@@ -120,7 +125,7 @@ export default function ProductDetail() {
         }
     }, [selectedVariant, product])
     console.log(images, "omg")
-
+console.log(variantId, "varintID")
 
 
     //auto selection for Single variant
@@ -174,7 +179,7 @@ export default function ProductDetail() {
 
                 <ProductInfo info={info} />
 
-                <ProductVariants images={images} info={info} noMatch={noMatch} availableOption={availableOption} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} allVariant={allVariant} />
+                <ProductVariants images={images} variantId={variantId} info={info} noMatch={noMatch} availableOption={availableOption} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} allVariant={allVariant} />
                 <Reviews reviews={product.reviews} />
 
             </div>

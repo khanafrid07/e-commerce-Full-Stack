@@ -3,7 +3,7 @@ import { Package } from "lucide-react"
 export default function ProductInfo({ info }) {
 
     console.log("info ciming", info)
-    const finalPrice = info.price - (info.price * info.discount) / 100;
+    const finalPrice = info.finalPrice
 
     return (
 

@@ -1,6 +1,6 @@
 import { useGetProductsQuery } from "../features/products/productSlice";
 import LandingCard from "./product/LandingCard";
-import { Zap, Loader2, AlertCircle } from "lucide-react";
+import {ArrowRight, Zap, Loader2, AlertCircle } from "lucide-react";
 import { motion } from "framer-motion";
 export default function TrendingProducts({ category, gender }) {
   const { isLoading, isError, data, refetch } = useGetProductsQuery({
@@ -21,33 +21,35 @@ export default function TrendingProducts({ category, gender }) {
     );
   }
 
-  if (isError) {
-    return (
-      <div className="text-center py-16 bg-gradient-to-br from-red-50 to-pink-100">
-        <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-        <p className="text-red-600 font-semibold text-lg mb-4">Failed to load trending products</p>
-        <button onClick={() => refetch()} className="btn btn-primary">
-          Try Again
-        </button>
-      </div>
-    );
-  }
 
   const { allProducts = [] } = data || {};
 
   return (
-    <section className="relative overflow-hidden">
+    <section className="relative px-4 sm:px-6 md:px-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-14 gap-2">
+        <div>
+          <h2 className="text-3xl font-semibold sm:text-4xl md:text-5xl  tracking-tight text-base-content mb-2 sm:mb-4">
+            Most Popular
+          </h2>
+          <p className="text-base-content/60 text-sm sm:text-xl font-light">
+            The pieces everyone is talking about.
+          </p>
+        </div>
+        <button className="text-xs sm:text-sm font-semibold uppercase tracking-widest text-base-content hover:text-primary transition-colors flex items-center gap-2 group w-fit">
+          View All
+          <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+        </button>
+      </div>
 
 
-
-      <div className="bg-white overflow-hidden ">
+      <div className="bg-white ">
         <div className=" ">
           <motion.div initial={{ x: 50, opacity: 0 }} whileInView={{ x: 0, opacity: 1 }} transition={{ duration: 0.6 }}>
 
             {allProducts.length > 0 ? (
               <LandingCard trending={true} products={allProducts} />
             ) : (
-              <div className="flex flex-col items-center justify-center py-16 px-4">
+              <div className="flex flex-col items-center justify-center ">
                 <div className="text-center">
                   <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center mx-auto mb-4">
                     <Zap className="text-purple-500" size={40} />

@@ -38,7 +38,7 @@ export default function NewArrivals() {
 
 
 
-      <div className="max-w-9xl mx-auto px-4  sm:px-6 md:px-8 ">
+      <div className="max-w-9xl mx-auto px-1  sm:px-4 md:px-6 ">
         {/* Header Section */}
 
         {/* Products Container */}
