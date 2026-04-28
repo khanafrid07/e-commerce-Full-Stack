@@ -1,7 +1,7 @@
 // sampleProducts.js
 const mongoose = require("mongoose");
 const Product = require("../models/product.js");
-const Category = require("../models/categorySchema.js");
+
 
 // const sampleProducts = [
 //   {
@@ -93,7 +93,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/ecommerce", {
 })
   .then(() => {
     console.log("MongoDB connected");
-    addDaata();
+
   })
   .catch(err => console.log(err));
 
@@ -109,23 +109,42 @@ mongoose.connect("mongodb://127.0.0.1:27017/ecommerce", {
 // }
 
 
-async function addDaata(params) {
-  await Category.deleteMany()
-  await Category.insertMany([
-    {
-      name: "Fashion",
-      slug: "fashion",
-      image: "https://images.pexels.com/photos/9546248/pexels-photo-9546248.jpeg"
-    },
-    {
-      name: "Beauty",
-      slug: "beauty",
-      image: "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg"
-    }
-  ])
+// async function addDaata(params) {
+//   await Category.deleteMany()
+//   await Category.insertMany([
+//     {
+//       name: "Fashion",
+//       slug: "fashion",
+//       image: "https://images.pexels.com/photos/9546248/pexels-photo-9546248.jpeg"
+//     },
+//     {
+//       name: "Beauty",
+//       slug: "beauty",
+//       image: "https://images.pexels.com/photos/2529148/pexels-photo-2529148.jpeg"
+//     }
+//   ])
 
 
-}
+// }
 
-const res = addDaata()
+const updatedProduct = async () => {
+  const products = await Product.find();
+
+  for (const p of products) {
+    if (!p.variants?.length) continue;
+
+    const base = p.variants.reduce((min, v) =>
+      v.price < min.price ? v : min
+    );
+
+    p.basePrice = (base.price * (100 - (base.discount || 0))) / 100;
+    p.discount = base.discount
+
+    await p.save();
+  }
+
+  console.log("All products updated");
+};
+
+const res = updatedProduct()
 console.log(res, "added")
