@@ -1,0 +1,76 @@
+import { useParams } from "react-router-dom"
+import { useGetProductsQuery, useViewProductQuery } from "../productSlice"
+import { useEffect, useState } from "react"
+import ProductInfo from "./ProductInfo"
+import ProductImageGallery from "./ProductImageGallery"
+import ProductVariants from "./ProductVariants"
+import CartAndPrice from "./CartAndPrice"
+import { useAddToCartMutation } from "../../cart/cart"
+import { notifySuccess, notifyError } from "../../../utils/notify"
+import SuggestedProduct from "../section/SuggestedProduct"
+import Reviews from "../reviews/Reviews"
+import { useSelector } from "react-redux"
+
+export default function ProductDetail() {
+    const { id } = useParams()
+    const { data, isLoading, refetch } = useViewProductQuery(id)
+    const [addToCart, { isError, error, isLoading: isAdding }] = useAddToCartMutation()
+    const { product } = data || {}
+    const [selectedVariant, setSelectedVariant] = useState(null)
+    const user = useSelector((state) => state.auth.user)
+    useEffect(() => {
+        if (product) {
+            const hasVariantImg = product?.variants?.find((v) => v.images.length > 0)
+
+            setSelectedVariant(product?.variants?.[0])
+        }
+    }, [product])
+
+    if (isLoading) {
+        return <div>Loading...</div>
+    }
+
+    const handleAddToCart = async () => {
+        if (!user) return notifyError("Please login to add item to cart");
+        if (selectedVariant?.stock === 0) return notifyError("Out of Stock");
+
+        try {
+            await addToCart({
+                productId: product._id,
+                variantId: selectedVariant._id,
+                quantity: 1,
+
+            }).unwrap()
+            notifySuccess("Item added to cart")
+            refetch
+        } catch (error) {
+            notifyError(error?.data?.message || "Failed to add item to cart")
+
+        }
+    }
+
+    return (
+        <div>
+
+            <div className="grid md:grid-cols-2 gap-3 py-4">
+
+                <ProductImageGallery images={selectedVariant?.images?.length > 0 ? selectedVariant.images : product?.images || []} />
+                <div className="px-2 md:px-4">
+
+                    <ProductInfo info={selectedVariant} product={product} />
+
+                    <ProductVariants images={product?.images} info={product} selectedVariant={selectedVariant} setSelectedVariant={setSelectedVariant} allVariant={product?.variants} />
+                    <CartAndPrice onAdding={handleAddToCart} stock={selectedVariant?.stock} />
+                    <Reviews refetch={refetch} reviews={product?.reviews || []} />
+
+                </div>
+
+            </div>
+            <section className="px-4 md:px-8">
+
+                <SuggestedProduct product={product} />
+            </section>
+        </div>
+    )
+}
+

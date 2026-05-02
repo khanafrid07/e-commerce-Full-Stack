@@ -1,6 +1,6 @@
 export default function CenterMinimal({ banner, rounded }) {
   return (
-    <div className={`relative h-[300px] md:h-[500px] w-full flex items-center justify-center ${rounded?"rounded-xl":"rounded-none"} overflow-hidden`}>
+    <div className={`relative h-[55vh] md:h-[75vh] w-full flex items-center justify-center ${rounded ? "rounded-xl" : "rounded-none"} overflow-hidden`}>
 
       <img
         src={banner.image}

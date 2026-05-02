@@ -3,7 +3,7 @@ import authReducer from "../features/auth/authSlice.js";
 import { ProductApi } from '../features/products/productSlice.js';
 import { orderApi } from '../features/orders/orderSlice.js';
 import { cartApi } from '../features/cart/cart.js';
-import { reviewApi } from '../components/product/detail/reviewSlice.js';
+import { reviewApi } from '../features/products/reviews/reviewSlice.js';
 import { bannerApi } from "../features/Banners/BannerSlice.js"
 import { dashboardApi } from '../features/Dashboard/dashboardSlice.js';
 

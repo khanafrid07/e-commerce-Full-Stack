@@ -1,7 +1,3 @@
-// ============================================
-// FIXED: Cart API Slice
-// Location: src/features/cart/cart.js
-// ============================================
 
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
@@ -19,36 +15,38 @@ export const cartApi = createApi({
   endpoints: (builder) => ({
 
     getCart: builder.query({
-      query: () => "/",
+      query: (params = { count: false }) => {
+        const query = new URLSearchParams();
+        params?.count && query.append("count", params.count);
+        return `/?${query}`;
+      },
       providesTags: ["Cart"],
     }),
 
-    // FIXED: Changed selectedVariant → variants
+
     addToCart: builder.mutation({
-      query: ({ productId, quantity, variants }) => ({
+      query: ({ productId, quantity, variantId }) => ({
         url: "/add",
         method: "POST",
-        body: { productId, quantity, variants },
+        body: { productId, quantity, variantId },
       }),
       invalidatesTags: ["Cart"],
     }),
 
-    // FIXED: Changed selectedVariant → variant
+
     updateCartItem: builder.mutation({
-      query: ({ id, quantity, variant }) => ({
-        url: `/update/${id}`,
+      query: ({ productId, variantId, quantity }) => ({
+        url: `/update`,
         method: "PUT",
-        body: { quantity, variant },
+        body: { productId, variantId, quantity },
       }),
       invalidatesTags: ["Cart"],
     }),
 
-    // FIXED: Changed selectedVariant → variant
     removeCartItem: builder.mutation({
-      query: ({ id, variant }) => ({
-        url: `/remove/${id}`,
+      query: ({ productId, variantId }) => ({
+        url: `/remove/${productId}/${variantId}`,
         method: "DELETE",
-        body: { variant },
       }),
       invalidatesTags: ["Cart"],
     }),

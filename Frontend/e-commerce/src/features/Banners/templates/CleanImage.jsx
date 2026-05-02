@@ -1,6 +1,6 @@
-export function CleanImage({ banner, rounded }) {
+export function CleanImage({ banner, rounded = false }) {
   return (
-    <div className={`relative h-[300px] sm:h-[400px] md:h-[500px] w-full ${rounded?"rounded-2xl":"rounded-none"} overflow-hidden`}>
+    <div className={`relative h-[55vh] md:h-[75vh] w-full ${rounded ? "rounded-2xl" : "rounded-none"} overflow-hidden`}>
 
       {/* Image */}
       <img

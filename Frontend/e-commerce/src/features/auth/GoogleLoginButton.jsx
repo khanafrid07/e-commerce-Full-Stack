@@ -1,33 +1,42 @@
-import React from "react";
 import { GoogleLogin } from "@react-oauth/google";
 import { useDispatch } from "react-redux";
 import { loginWithGoogle } from "./authSlice";
+import { useNavigate } from "react-router-dom";
+import { notifySuccess, notifyError } from "../../utils/notify";
 
 const GoogleLoginButton = () => {
-  const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  if (!clientId) {
-    console.error("Google Client ID not found! Check your .env file.");
-    return null;
-  }
+  const handleSuccess = async (googleToken) => {
+    try {
+      console.log("Google token:", googleToken);
 
-  const handleSuccess = (googleToken) => {
-    dispatch(loginWithGoogle(googleToken)); 
+      await dispatch(loginWithGoogle(googleToken)).unwrap();
+
+      notifySuccess("Login successful 🚀");
+      navigate("/");
+    } catch (err) {
+      notifyError(err || "Google login failed");
+    }
   };
 
   return (
-   
-      <GoogleLogin
-        onSuccess={(credentialResponse) => {
-          const googleToken = credentialResponse.credential; 
-          console.log("Google token:", googleToken);
+    <GoogleLogin
+      onSuccess={(credentialResponse) => {
+        const googleToken = credentialResponse?.credential;
 
-          handleSuccess(googleToken);
-        }}
-        onError={() => console.log("Google login failed")}
-      />
-   
+        if (!googleToken) {
+          notifyError("Google login failed");
+          return;
+        }
+
+        handleSuccess(googleToken);
+      }}
+      onError={() => {
+        notifyError("Google login failed");
+      }}
+    />
   );
 };
 

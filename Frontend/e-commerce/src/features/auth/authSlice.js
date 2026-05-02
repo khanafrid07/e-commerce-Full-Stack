@@ -1,20 +1,27 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
+import { fa } from "zod/v4/locales";
 
-// ✅ REGISTER USER
-export const registerUser = createAsyncThunk(
-  "auth/register",
-  async (data, { rejectWithValue }) => {
-    try {
-      const res = await axios.post("http://localhost:8080/api/auth/register", data);
-      return res.data;
-    } catch (error) {
-      return rejectWithValue(error?.response?.data?.message || "Registration failed");
-    }
+
+
+export const sendOtp = createAsyncThunk("auth/sendOtp", async (data, { rejectWithValue }) => {
+  try {
+    const res = await axios.post("http://localhost:8080/api/auth/send-otp", data);
+    return res.data
+  } catch (error) {
+    return rejectWithValue(error?.response?.data?.message || "Failed to send OTP")
   }
-);
+})
+export const verifyOtp = createAsyncThunk("auth/verifyOtp", async (data, { rejectWithValue }) => {
+  try {
+    const res = await axios.post("http://localhost:8080/api/auth/verify-otp", data);
+    return res.data
+  } catch (error) {
+    return rejectWithValue(error?.response?.data?.message || "Failed to verify OTP")
+  }
+})
 
-// ✅ LOGIN USER
+
 export const loginUser = createAsyncThunk(
   "auth/login",
   async (data, { rejectWithValue }) => {
@@ -22,17 +29,17 @@ export const loginUser = createAsyncThunk(
       const res = await axios.post("http://localhost:8080/api/auth/login", data);
       return res.data;
     } catch (err) {
-       console.log("ERROR:", err.response?.data);
+      ("ERROR:", err.response?.data);
       return rejectWithValue(err?.response?.data?.message || "Login failed");
     }
   }
 );
-export const loginWithGoogle = createAsyncThunk("auth/google", async (token,  { rejectWithValue }) => {
+export const loginWithGoogle = createAsyncThunk("auth/google", async (token, { rejectWithValue }) => {
   try {
-    const res = await axios.post("http://localhost:8080/api/auth/google", {token});
+    const res = await axios.post("http://localhost:8080/api/auth/google", { token });
     return res.data
   } catch (err) {
-    console.log("GOOGLE ERROR:", err.response?.data);
+    ("GOOGLE ERROR:", err.response?.data);
     return rejectWithValue(err?.response?.message || "Login failed")
   }
 })
@@ -41,7 +48,7 @@ export const addAddress = createAsyncThunk(
   "auth/addAddress",
   async (data, { rejectWithValue, dispatch }) => {
     try {
-      const token = localStorage.getItem("token"); // ✅ add this
+      const token = localStorage.getItem("token");
       const res = await axios.post(
         "http://localhost:8080/api/auth/address",
         data,
@@ -61,8 +68,6 @@ export const addAddress = createAsyncThunk(
   }
 );
 
-
-// ✅ FETCH USER
 export const fetchUser = createAsyncThunk(
   "auth/fetchUser",
   async (_, { rejectWithValue }) => {
@@ -81,15 +86,15 @@ export const fetchUser = createAsyncThunk(
   }
 );
 
-// ✅ AUTH SLICE
 const authSlice = createSlice({
   name: "auth",
   initialState: {
     user: null,
-    loading: false,
     token: localStorage.getItem("token") || null,
     error: null,
-    currentAddress: JSON.parse(localStorage.getItem("currentAddress")) || null
+    currentAddress: JSON.parse(localStorage.getItem("currentAddress")) || null,
+    loading: false,
+
   },
 
 
@@ -108,18 +113,31 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // REGISTER
-      .addCase(registerUser.pending, (state) => {
+      .addCase(sendOtp.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(registerUser.fulfilled, (state, action) => {
+      .addCase(sendOtp.fulfilled, (state, action) => {
         state.loading = false;
         state.user = action.payload.user;
         state.token = action.payload.token;
         localStorage.setItem("token", action.payload.token);
       })
-      .addCase(registerUser.rejected, (state, action) => {
+      .addCase(sendOtp.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(verifyOtp.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(verifyOtp.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        localStorage.setItem("token", action.payload.token);
+      })
+      .addCase(verifyOtp.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       })
@@ -175,7 +193,6 @@ const authSlice = createSlice({
       })
       .addCase(addAddress.fulfilled, (state, action) => {
         state.loading = false;
-        // ✅ assuming backend returns updated user
         state.user = action.payload;
       })
       .addCase(addAddress.rejected, (state, action) => {

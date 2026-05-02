@@ -1,9 +1,10 @@
 
+import { useSelector } from "react-redux";
 import { useGetDashboardStatsQuery } from "../features/Dashboard/dashboardSlice"
 
 export default function useDashboardStats() {
-
-    const { data, isLoading, isError } = useGetDashboardStatsQuery()
+    const isAuth = useSelector((state) => state.auth);
+    const { data, isLoading, isError } = useGetDashboardStatsQuery(undefined, { skip: !isAuth })
 
 
     return {

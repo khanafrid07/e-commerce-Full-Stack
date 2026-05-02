@@ -24,7 +24,7 @@ export const ProductApi = createApi({
     getProducts: builder.query({
       query: (params = {}) => ({
         url: "/products",
-        params, 
+        params,
       }),
       providesTags: (result, error, args) => {
         if (result) {
@@ -32,12 +32,12 @@ export const ProductApi = createApi({
             { type: "Products", id: "LIST" },
             ...result.allProducts?.map(({ _id }) => ({ type: "Products", id: _id })) || [],
           ];
-          
+
         }
         return [{ type: "Products", id: "LIST" }];
-        
+
       },
-      
+
     }),
 
     viewProduct: builder.query({
@@ -45,18 +45,18 @@ export const ProductApi = createApi({
       providesTags: (result, error, id) => [{ type: "Products", id }],
     }),
 
-  
+
     addProduct: builder.mutation({
-      query: (newProduct) => ({
+      query: (formData) => ({
         url: "/products",
         method: "POST",
-        body: newProduct,
+        body: formData,
       }),
 
       invalidatesTags: [{ type: "Products", id: "LIST" }],
     }),
 
-   
+
     updateProduct: builder.mutation({
       query: ({ id, data }) => ({
         url: `/products/${id}`,
@@ -64,10 +64,13 @@ export const ProductApi = createApi({
         body: data,
       }),
 
-      invalidatesTags: [{ type: "Products", id: "LIST" }],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Products", id },
+        { type: "Products", id: "LIST" }
+      ],
     }),
 
-  
+
     deleteProduct: builder.mutation({
       query: (id) => ({
         url: `/products/${id}`,

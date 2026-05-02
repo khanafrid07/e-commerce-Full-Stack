@@ -2,42 +2,126 @@ import { useState } from "react";
 import { loginUser, logout } from "./authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import LoginForm from "./LoginForm";
-export default function Login() {
+import RegisterForm from "./RegisterForm";
+import { notifyError, notifySuccess } from "../../utils/notify";
+import { useNavigate } from "react-router-dom";
+import { ShoppingBag } from "lucide-react";
+import { GoogleLogin } from "@react-oauth/google";
+export default function Login({ form = "login" }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [switchForm, setSwitchForm] = useState(form);
+  const [name, setName] = useState("");
+
   const { user, error, loading } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(loginUser({ email, password }));
+
+    try {
+      await dispatch(loginUser({ email, password })).unwrap();
+      notifySuccess("Welcome back!");
+      navigate("/");
+    } catch (error) {
+      notifyError(error.message || "Login failed");
+    }
   };
-const logoutUser = ()=>{
-  dispatch(logout())
-}
-  
+
+  const logoutUser = () => {
+    dispatch(logout());
+    notifySuccess("Logged out");
+    navigate("/");
+  };
+
   return (
-    <div className="grid md:grid-cols-2 min-h-screen">
+    <div className="min-h-screen w-full grid md:grid-cols-2 relative overflow-hidden">
 
-      {/* Banner */}
-      <div className="relative bg-gray-400 flex items-center justify-center">
-        <h1 className="text-white text-3xl">Banner Page</h1>
-        <button onClick={()=>logoutUser()}>Logout</button>
+      {/* BACKGROUND IMAGE + OVERLAY (FIXED CONTRAST) */}
+      <div className="absolute inset-0">
+        <img
+          src="https://images.pexels.com/photos/4005039/pexels-photo-4005039.jpeg"
+          className="w-full h-full object-cover"
+        />
+        {/* darker premium overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/60 to-black/40" />
+      </div>
 
+      {/* LEFT BRAND SIDE */}
+      <div className="relative hidden md:flex flex-col justify-center items-center text-white p-10">
 
-        {/* Mobile overlay */}
-        <div className="absolute inset-0 flex items-center justify-center md:hidden">
-          <LoginForm email={email} setEmail={setEmail} handleSubmit={handleSubmit} password={password} setPassword={setPassword} error={error} loading={loading
+        <div className="text-center space-y-5 max-w-md">
+          <ShoppingBag className="w-12 h-12 mx-auto text-white/90" />
 
-          }/>
+          <h1 className="text-4xl font-extrabold leading-tight">
+            Shop Smart.<br />
+            Live Better.
+          </h1>
+
+          <p className="text-white/70 text-sm leading-relaxed">
+            Discover premium fashion, trending styles, and exclusive deals
+            tailored just for you.
+          </p>
+        </div>
+
+        {user && (
+          <button
+            onClick={logoutUser}
+            className="absolute top-6 right-6 px-4 py-2 rounded-full border border-white/30 text-white/80 hover:text-white hover:bg-white/10 transition"
+          >
+            Logout
+          </button>
+        )}
+      </div>
+
+      {/* RIGHT LOGIN SIDE */}
+      <div className="relative flex items-center justify-center p-6">
+
+        {/* PREMIUM GLASS CARD */}
+        <div className=" max-w-md backdrop-blur-2xl bg-white/90 border border-white/30 shadow-2xl rounded-3xl p-6">
+
+          {/* subtle header (optional but premium feel)
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-bold text-gray-800">
+              {switchForm === "login" ? "Welcome Back" : "Create Account"}
+            </h2>
+            <p className="text-sm text-gray-500">
+              {switchForm === "login"
+                ? "Login to continue shopping"
+                : "Join and explore premium products"}
+            </p>
+          </div> */}
+
+          {switchForm === "login" ? (
+            <LoginForm
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              handleSubmit={handleSubmit}
+              loading={loading}
+              error={error}
+              switchForm={switchForm}
+              setSwitchForm={setSwitchForm}
+            />
+          ) : (
+            <RegisterForm
+              email={email}
+              setEmail={setEmail}
+              password={password}
+              setPassword={setPassword}
+              handleSubmit={handleSubmit}
+              loading={loading}
+              error={error}
+              switchForm={switchForm}
+              setSwitchForm={setSwitchForm}
+              name={name}
+              setName={setName}
+            />
+          )}
         </div>
       </div>
-
-      {/* Desktop form */}
-      <div className="hidden md:flex justify-center items-center border p-8">
-        <LoginForm email={email} setEmail={setEmail} handleSubmit={handleSubmit} password={password} setPassword={setPassword} error={error} loading={loading}/>
-      </div>
-      
     </div>
   );
 }

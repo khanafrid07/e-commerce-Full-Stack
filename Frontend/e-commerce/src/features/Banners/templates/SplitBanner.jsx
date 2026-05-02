@@ -8,7 +8,7 @@ export function SplitBanner({ banner }) {
         <h2 className="text-3xl text-white font-bold">
           {banner.title}
         </h2>
-         <p className="mt-2 text-gray-600">
+        <p className="mt-2 text-gray-600">
           {banner.heading}
         </p>
 
@@ -27,7 +27,7 @@ export function SplitBanner({ banner }) {
       {/* Right Image */}
       <div>
         <img
-          src={banner.image}
+          src={banner.image.url}
           className="w-full h-full object-cover"
         />
       </div>

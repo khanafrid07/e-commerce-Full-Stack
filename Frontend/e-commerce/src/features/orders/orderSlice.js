@@ -4,62 +4,75 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
 export const orderApi = createApi({
     reducerPath: "orderApi",
-    baseQuery: fetchBaseQuery({baseUrl: "http://localhost:8080/api", prepareHeaders: (headers)=>{
-        const token = localStorage.getItem("token")
-        if(token){
+    baseQuery: fetchBaseQuery({
+        baseUrl: "http://localhost:8080/api", prepareHeaders: (headers) => {
+            const token = localStorage.getItem("token")
+            if (token) {
 
-            headers.set("Authorization", `Bearer ${token}`)
+                headers.set("Authorization", `Bearer ${token}`)
+            }
+            return headers
         }
-        return headers
-    }}),
-    tagTypes:["orders"],
-    endpoints: (builder)=>({
+    }),
+    tagTypes: ["orders"],
+    endpoints: (builder) => ({
         getOrders: builder.query({
-            query: ()=> "/orders",
+            query: () => "/orders",
             providesTags: ["orders"]
         }),
-        singleOrder: builder.query({
-            query:(id)=>`/orders/${id}`,
+        orderById: builder.query({
+            query: (id) => `/orders/${id}`,
             providesTags: ["orders"]
         }),
         createOrder: builder.mutation({
-            query: (orderData)=>({
+            query: (orderData) => ({
                 url: "/orders",
                 body: orderData,
                 method: "POST"
             }),
-            invalidatesTags:["orders"]
+            invalidatesTags: ["orders"]
         }),
         updateOrder: builder.mutation({
-            query: ({productid, orderId, status})=>({
-                url: `/orders/${orderId}/${productid}`,
-                body: {status},
+            query: ({ orderId, status }) => ({
+                url: `/orders/${orderId}`,
+                body: { status },
                 method: "PUT"
             }),
             invalidatesTags: ["orders"]
         }),
         deleteOrder: builder.mutation({
-            query: (id)=>({
+            query: (id) => ({
                 url: `/orders/${id}`,
                 method: "DELETE"
             }),
             invalidatesTags: ["orders"]
         }),
         cancelOrder: builder.mutation({
-            query: ({productId, orderId})=>({
-                url: `/orders/cancel-product/${orderId}/${productId}`,
+            query: ({ orderId }) => ({
+                url: `/orders/${orderId}/cancel-order`,
                 method: "PUT",
-                
+
             }),
             invalidatesTags: ["orders"]
         }),
+        cancelOrderItem: builder.mutation({
+            query: ({ orderId, productId, variantId }) => ({
+                url: `/orders/${orderId}/items/cancel`,
+                method: "PUT",
+                body: {
+                    productId,
+                    variantId,
+                },
+            }),
+            invalidatesTags: ["orders"],
+        }),
         getOrderStats: builder.query({
-            query:()=>"/orders/stats",
-            providesTags:["orders"]
+            query: () => "/orders/stats",
+            providesTags: ["orders"]
         })
-        
+
     })
-   
+
 })
 
-export const {useGetOrderStatsQuery,useCreateOrderMutation, useDeleteOrderMutation, useGetOrdersQuery, useSingleOrderQuery, useUpdateOrderMutation, useCancelOrderMutation} = orderApi
+export const { useGetOrderStatsQuery, useCreateOrderMutation, useDeleteOrderMutation, useGetOrdersQuery, useOrderByIdQuery, useUpdateOrderMutation, useCancelOrderMutation, useCancelOrderItemMutation } = orderApi
