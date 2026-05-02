@@ -1,11 +1,67 @@
 const express = require("express");
 const router = express.Router()
 const Product = require("../models/product.js")
-const verifyToken = require("../middlewares/verifyUser.js")
+const { verifyAdmin } = require("../middlewares/verifyUser.js")
 const multer = require("multer")
 const upload = require("../config/multer.js")
-const { productSchema } = require("../joi.js")
-const validateSchema = require("../middlewares/validate.js")
+const { validate } = require("../middlewares/validate.js")
+const { productSchema } = require("../../Shared/Schema/ProductSchema.js")
+const { generateSKU } = require("../utils/skuGenerator.js");
+const fs = require("fs")
+const cloudinary = require("../config/cloudinary.js")
+const parseFormData = (req, res, next) => {
+  ("this is featuers", req.body.isFeatured)
+  try {
+    if (req.body.category && typeof req.body.category === "string") {
+      req.body.category = JSON.parse(req.body.category);
+    }
+
+    if (req.body.variants && typeof req.body.variants === "string") {
+      req.body.variants = JSON.parse(req.body.variants);
+    }
+
+
+    if (req.body.basePrice) {
+      req.body.basePrice = Number(req.body.basePrice);
+    }
+
+    if (req.body.isFeatured) {
+      req.body.isFeatured = req.body.isFeatured === "true";
+    }
+    if (req.body.keyFeatures && typeof req.body.keyFeatures === "string") {
+      req.body.keyFeatures = JSON.parse(req.body.keyFeatures);
+    }
+    if (req.body.tags && typeof req.body.tags === "string") {
+      req.body.tags = JSON.parse(req.body.tags);
+    }
+
+    if (req.body.stock) {
+      req.body.stock = Number(req.body.stock);
+    }
+
+    if (req.body.discount) {
+      req.body.discount = Number(req.body.discount);
+    }
+
+    if (req.body.featured) {
+      req.body.featured = req.body.featured === "true";
+    }
+
+    if (req.body.isActive) {
+      req.body.isActive = req.body.isActive === "true";
+    }
+
+    if (req.body.deleteImages && typeof req.body.deleteImages === "string") {
+      req.body.deleteImages = JSON.parse(req.body.deleteImages);
+    }
+
+    next();
+  } catch (err) {
+    return res.status(400).json({
+      message: "Invalid JSON in form data",
+    });
+  }
+};
 router.get("/", async (req, res) => {
   try {
     const {
@@ -16,14 +72,15 @@ router.get("/", async (req, res) => {
       sub,
       type,
       gender,
-      search
+      search,
+      discount
     } = req.query;
-    console.log("gnder", gender)
 
     const capitalize = (str) => {
       if (!str) return null;
       return str.charAt(0).toUpperCase() + str.slice(1);
     };
+
 
     const isValid = (val) =>
       val !== undefined &&
@@ -34,7 +91,36 @@ router.get("/", async (req, res) => {
 
     let filter = {};
 
+    if (isValid(search)) {
+      const normalizedSearch = search.split("").join("[-\\s]*");
 
+      filter.$or = [
+        {
+          title: {
+            $regex: normalizedSearch,
+            $options: "i",
+          },
+        },
+        {
+          description: {
+            $regex: normalizedSearch,
+            $options: "i",
+          },
+        },
+        {
+          "category.main": {
+            $regex: normalizedSearch,
+            $options: "i",
+          },
+        },
+        {
+          "category.sub": {
+            $regex: normalizedSearch,
+            $options: "i",
+          },
+        },
+      ];
+    }
     if (isValid(categories)) {
       const allCategories = categories.split(",");
       const catArray = allCategories.map(capitalize);
@@ -43,26 +129,29 @@ router.get("/", async (req, res) => {
     }
 
     else if (isValid(category)) {
-      filter["category.main"] = capitalize(category);
+      filter["category.main"] = { $regex: `^${category}$`, $options: "i" };
     }
 
 
     if (isValid(sub)) {
-      filter["category.sub"] = capitalize(sub);
+      filter["category.sub"] = { $regex: `^${sub}$`, $options: "i" };
     }
 
     if (isValid(type)) {
-      filter["category.sub"] = capitalize(type);
+      filter["category.sub"] = { $regex: `^${type}$`, $options: "i" };
     }
 
 
     if (isValid(gender)) {
-      filter["category.gender"] = capitalize(gender);
+      filter["category.gender"] = { $regex: `^${gender}$`, $options: "i" };
     }
 
-
+    (filter, "filter")
     if (sort === "featured") {
-      filter.featured = true;
+      filter.isFeatured = true;
+    }
+    if (discount) {
+      filter.discount = { $gt: Number(discount) };
     }
     let sortQuery = {};
     if (sort === "trending") sortQuery = { soldCount: -1 };
@@ -70,23 +159,13 @@ router.get("/", async (req, res) => {
     else if (sort === "priceLow") sortQuery = { basePrice: 1 };
     else if (sort === "priceHigh") sortQuery = { basePrice: -1 };
 
-    console.log("FILTER:", filter);
-
-    if (search) {
-      filter = {
-        ...filter,
-        $text: { $search: search }
-      }
-    }
-
     const allProducts = await Product.find(filter)
       .sort(sortQuery)
       .limit(Number(limit));
 
     if (!allProducts.length) {
-      return res.status(404).json({ message: "No Products Found!" });
+      return res.status(200).json({ allProducts: [] });
     }
-    console.log(allProducts, "product")
     return res.status(200).json({ allProducts });
 
   } catch (err) {
@@ -102,165 +181,358 @@ router.get("/", async (req, res) => {
 
 router.get("/:id", async (req, res) => {
   try {
-    const { id } = req.params;
+    let { id } = req.params;
+    id = id.split("-").pop();
     const product = await Product.findById(id).populate("reviews");
     if (!product) return res.status(404).json({ message: "Product Not Found!", error: err.message });
     res.status(200).json({ product });
   } catch (err) {
-    res.status(500).json({ message: "Error fetching product", error: err.message }); 8
+    res.status(500).json({ message: "Error fetching product", error: err.message });
   }
 });
-router.post("/", validateSchema(productSchema), upload.any(), async (req, res) => {
-  try {
-    const parsedCategory = JSON.parse(req.body.category);
-    const parsedVariants = JSON.parse(req.body.variants);
-    const parsedBaseVariant = JSON.parse(req.body.baseVariant);
-    console.log(req.body)
 
 
-    const mainImages = req.files
-      .filter(f => f.fieldname === "images")
-      .map((file, index) => ({
-        url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
-        fileName: file.originalname,
-        isMain: index === 0,
-      }));
+router.post(
+  "/",
+  verifyAdmin,
+  upload.any(),
+  parseFormData,
+  validate(productSchema),
+  async (req, res) => {
+    try {
+      const {
+        title,
+        description,
+        category,
+        variants,
+        keyFeatures,
+        featured,
+        slug,
+        stock,
+        isFeatured,
+        tags,
+      } = req.body;
 
+      const files = req.files || [];
 
-    parsedVariants.forEach((variant, i) => {
-      const variantFiles = req.files.filter(
-        f => f.fieldname === `variantImages_${i}`
+      // ---------------- MAIN IMAGE ----------------
+      const mainImg = files.find(
+        (f) => f.fieldname === "mainImage"
       );
 
-      variant.images = variantFiles.map((file) => ({
-        url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
-        fileName: file.originalname
-      }));
+      const otherImages = files.filter(
+        (f) => f.fieldname === "images"
+      );
 
-      if (!variant.typeValues) {
-        throw new Error("typeValues missing for a variant");
+      let uploadedImage = [];
+
+
+      const uploadToCloudinary = async (file, folder) => {
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder,
+        });
+
+        fs.unlink(file.path, () => { }); // non-blocking delete
+
+        return result;
+      };
+
+      // MAIN IMAGE
+      if (mainImg) {
+        const result = await uploadToCloudinary(mainImg, "products");
+
+        uploadedImage.push({
+          url: result.secure_url,
+          public_id: result.public_id,
+          isMain: true,
+        });
       }
-    });
 
-    const newProduct = new Product({
-      title: req.body.title,
-      description: req.body.description,
-      basePrice: req.body.basePrice,
-      stock: req.body.stock,
-      discount: req.body.discount || 0,
-      category: parsedCategory,
-      images: mainImages,
-      variants: parsedVariants,
-      baseVariant: parsedBaseVariant,
-      featured: req.body.featured === "true" || req.body.featured === true
-    });
+      // OTHER IMAGES
+      for (let file of otherImages) {
+        try {
+          const result = await uploadToCloudinary(file, "products");
 
-    await newProduct.save();
+          uploadedImage.push({
+            url: result.secure_url,
+            public_id: result.public_id,
+            isMain: false,
+          });
+        } catch (err) {
+          console.log("Image upload failed:", err.message);
+        }
+      }
 
-    res.json({ success: true, product: newProduct });
-  } catch (err) {
-    console.error("Add product error:", err);
-    res.status(500).json({ error: err.message });
-  }
-});
+      // fallback main image
+      if (uploadedImage.length > 0) {
+        const hasMain = uploadedImage.some((img) => img.isMain);
+        if (!hasMain) uploadedImage[0].isMain = true;
+      }
 
-
-
-router.put("/:id", verifyToken, upload.any(), async (req, res) => {
-  try {
-    const {
-      title,
-      description,
-      stock,
-      discount,
-      category,
-      variants,
-      existingImages,
-      featured,
-      baseVariant,
-      basePrice
-    } = req.body;
-
-    const product = await Product.findById(req.params.id);
-    if (!product) return res.status(404).json({ message: "Product not found" });
-
-    // Parse JSON fields
-    const parsedCategory = category ? JSON.parse(category) : product.category || {};
-    const parsedVariants = variants ? JSON.parse(variants) : product.variants || [];
-    const parsedExistingImages = existingImages ? JSON.parse(existingImages) : [];
-    const parsedBaseVariant = baseVariant
-      ? JSON.parse(baseVariant)
-      : product.baseVariant || { typeValues: {}, price: 0, stock: 0 };
-    const parsedFeatured = featured === "true" || featured === true;
-
-    // Update basic fields
-    product.title = title ?? product.title;
-    product.description = description ?? product.description;
-   
-    product.stock = Number(stock) || product.stock;
-    product.discount = Number(discount) || 0;
-    product.basePrice = Number(basePrice) || 0;
-    product.category = parsedCategory;
-    product.baseVariant = parsedBaseVariant;
-    product.featured = parsedFeatured;
-
-    // ============================================
-    // HANDLE MAIN PRODUCT IMAGES
-    // ============================================
-    const newMainImages = req.files
-      .filter(f => f.fieldname === "images")
-      .map((file) => ({
-        url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
-        isMain: false,
-        fileName: file.originalname,
-      }));
-
-    // Merge existing + new images
-    let mergedImages = [...parsedExistingImages, ...newMainImages].slice(0, 5);
-
-    // Ensure at least one main image
-    if (!mergedImages.some((img) => img.isMain) && mergedImages.length) {
-      mergedImages[0].isMain = true;
-    }
-
-    product.images = mergedImages;
-
-    // ============================================
-    // HANDLE VARIANT IMAGES
-    // ============================================
-    parsedVariants.forEach((variant, i) => {
-      // Get new files for this variant
-      const newVariantFiles = req.files.filter(
-        f => f.fieldname === `variantImages_${i}`
+      // ---------------- VARIANTS ----------------
+      const variantImages = files.filter((f) =>
+        f.fieldname.startsWith("variantImages_")
       );
 
-      // Convert new files to image objects
-      const newVariantImages = newVariantFiles.map((file) => ({
-        url: `${req.protocol}://${req.get("host")}/uploads/${file.filename}`,
-        fileName: file.originalname
-      }));
+      const parsedVariants =
+        typeof variants === "string"
+          ? JSON.parse(variants)
+          : variants;
 
-      // Merge existing variant images + new ones
-      const existingVariantImages = variant.images || [];
-      variant.images = [...existingVariantImages, ...newVariantImages].slice(0, 5);
-    });
+      for (let i = 0; i < parsedVariants.length; i++) {
+        const variant = parsedVariants[i];
 
-    product.variants = parsedVariants;
+        const group = variantImages.filter(
+          (f) => f.fieldname === `variantImages_${i}`
+        );
 
-    await product.save();
+        variant.images = [];
 
-    res.json({ message: "Product updated successfully", product });
+        for (let file of group) {
+          try {
+            const result = await uploadToCloudinary(
+              file,
+              "products/variants"
+            );
 
-  } catch (err) {
-    console.error("Update product error:", err);
-    res.status(500).json({
-      message: "Error updating product",
-      error: err.message,
-    });
+            variant.images.push({
+              url: result.secure_url,
+              public_id: result.public_id,
+            });
+          } catch (err) {
+            console.log("Variant upload failed:", err.message);
+          }
+        }
+
+        variant.sku = generateSKU({
+          title,
+          variant: variant.attributes,
+        });
+      }
+
+
+      const baseVariant = parsedVariants?.[0];
+
+      if (!baseVariant) {
+        return res.status(400).json({
+          message: "At least one variant is required",
+        });
+      }
+
+      const lowestPriceVariant = parsedVariants.reduce(
+        (min, v) => (v.price < min.price ? v : min),
+        parsedVariants[0]
+      );
+
+      const finalPrice =
+        lowestPriceVariant.price -
+        (lowestPriceVariant.price *
+          lowestPriceVariant.discount) /
+        100;
+
+      const newProduct = new Product({
+        title,
+        description,
+        basePrice: finalPrice,
+        discount: lowestPriceVariant.discount,
+        category,
+        variants: parsedVariants,
+        featured,
+        slug,
+        stock,
+        keyFeatures,
+        isFeatured,
+        tags,
+        images: uploadedImage,
+      });
+
+      await newProduct.save();
+
+      return res.status(201).json({
+        message: "Product added successfully",
+        product: newProduct,
+      });
+    } catch (err) {
+      console.error("PRODUCT ERROR:", err);
+
+      return res.status(500).json({
+        message: "Error creating product",
+        error: err.message,
+      });
+    }
   }
-});
+);
 
-router.delete("/:id", verifyToken, async (req, res) => {
+router.put(
+  "/:id", verifyAdmin, upload.any(), parseFormData, validate(productSchema),
+  async (req, res) => {
+    try {
+      console.log(req.files);
+      const { id } = req.params;
+
+      const { title, description, category, variants, slug, stock, keyFeatures, isFeatured, tags, deleteImages, } = req.body;
+
+      const product = await Product.findById(id);
+
+      if (!product) {
+        return res.status(404).json({ message: "Product not found" });
+      }
+      const uploadToCloudinary = async (file, folder) => {
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder,
+        });
+
+        fs.unlink(file.path, () => { });
+
+        return result;
+      };
+
+
+      const files = req.files || [];
+
+      const parsedVariants =
+        typeof variants === "string"
+          ? JSON.parse(variants)
+          : variants || [];
+
+      const imagesToDelete = Array.isArray(deleteImages)
+        ? deleteImages
+        : deleteImages
+          ? [deleteImages]
+          : [];
+
+      let updatedImages = product.images.filter(
+        (img) => !imagesToDelete.includes(img.url)
+      );
+      for (let url of imagesToDelete) {
+        const img = product.images.find((i) => i.url === url);
+        if (img?.public_id) {
+          await cloudinary.uploader.destroy(img.public_id);
+        }
+      }
+
+      // ---------------- UPLOAD NEW IMAGES ----------------
+      const images = files.filter((f) => f.fieldname === "images");
+
+      for (let file of images) {
+        const result = await uploadToCloudinary(file, "products");
+
+        updatedImages.push({
+          url: result.secure_url,
+          public_id: result.public_id,
+          isMain: false,
+        });
+
+
+      }
+
+      // ---------------- MAIN IMAGE ----------------
+      const mainImage = files.find(
+        (f) => f.fieldname === "mainImage"
+      );
+
+      if (mainImage) {
+        const result = await uploadToCloudinary(mainImage, "products");
+
+        updatedImages = updatedImages.map((img) => ({
+          ...img,
+          isMain: false,
+        }));
+
+        updatedImages.unshift({
+          url: result.secure_url,
+          public_id: result.public_id,
+          isMain: true,
+        });
+      }
+
+      // fallback main image
+      if (updatedImages.length > 0) {
+        const hasMain = updatedImages.some((i) => i.isMain);
+        if (!hasMain) updatedImages[0].isMain = true;
+      }
+
+      // ---------------- VARIANT IMAGES ----------------
+      const variantImages = files.filter((f) =>
+        f.fieldname.startsWith("variantImages_")
+      );
+
+      for (let i = 0; i < parsedVariants.length; i++) {
+        const variant = parsedVariants[i];
+
+        const group = variantImages.filter(
+          (f) => f.fieldname === `variantImages_${i}`
+        );
+
+        variant.images = variant.images || [];
+
+        for (let file of group) {
+          const result = await uploadToCloudinary(file, "products/variants");
+
+          variant.images.push({
+            url: result.secure_url,
+            public_id: result.public_id,
+          });
+
+
+        }
+
+        if (!variant.sku) {
+          variant.sku = generateSKU({
+            title,
+            variant: variant.attributes,
+          });
+        }
+      }
+
+      // ---------------- PRICE CALCULATION ----------------
+      const lowestPriceVariant = parsedVariants.reduce(
+        (min, v) => (v.price < min.price ? v : min),
+        parsedVariants[0]
+      );
+
+      const finalPrice =
+        lowestPriceVariant.price -
+        (lowestPriceVariant.price *
+          lowestPriceVariant.discount) /
+        100;
+
+
+      const updatedProduct = await Product.findByIdAndUpdate(
+        id,
+        {
+          title,
+          description,
+          basePrice: finalPrice,
+          discount: lowestPriceVariant.discount,
+          category,
+          variants: parsedVariants,
+          isFeatured,
+          keyFeatures,
+          slug,
+          tags,
+          stock: Number(stock),
+          images: updatedImages,
+        },
+        { new: true }
+      );
+
+      return res.status(200).json({
+        message: "Product updated successfully",
+        product: updatedProduct,
+      });
+    } catch (err) {
+      console.error("UPDATE ERROR:", err);
+
+      return res.status(500).json({
+        message: "Error updating product",
+        error: err.message,
+      });
+    }
+  }
+);
+
+router.delete("/:id", verifyAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const deletedProduct = await Product.findByIdAndDelete(id)

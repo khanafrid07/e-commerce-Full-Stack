@@ -2,30 +2,20 @@
 const express = require("express");
 const Cart = require("../models/cart");
 const Product = require("../models/product");
-const verifyToken = require("../middlewares/verifyUser");
+const { verifyToken } = require("../middlewares/verifyUser");
 const router = express.Router();
-
-function variantsMatch(variant1, variant2) {
-  const v1 = variant1 || {};
-  const v2 = variant2 || {};
-
-  // Convert both to JSON strings for deep comparison
-  const keys1 = Object.keys(v1).sort();
-  const keys2 = Object.keys(v2).sort();
-
-  if (keys1.length !== keys2.length) return false;
-
-  // Check if all keys and values match
-  return keys1.every(key => {
-    const val1 = String(v1[key]).toLowerCase().trim();
-    const val2 = String(v2[key]).toLowerCase().trim();
-    return val1 === val2;
-  });
-}
 
 
 router.get("/", verifyToken, async (req, res) => {
   try {
+    const count = req.query.count
+    console.log(req.query, "query")
+
+    if (count) {
+      const cart = await Cart.findOne({ user: req.userId });
+      return res.status(200).json({ count: cart ? cart.items.length : 0 });
+    }
+
     const cart = await Cart.findOne({ user: req.userId }).populate("items.product");
 
     if (!cart) return res.status(200).json({ items: [], totalPrice: 0 });
@@ -38,107 +28,112 @@ router.get("/", verifyToken, async (req, res) => {
 
 router.post("/add", verifyToken, async (req, res) => {
   try {
-    const { productId, quantity = 1, variants = {} } = req.body;
+    const { productId, variantId, quantity } = req.body;
 
-    console.log("🛒 Adding to cart:", { productId, quantity, variants });
+    let existingCartItems = await Cart.findOne({ user: req.userId });
 
     const product = await Product.findById(productId);
-    if (!product) return res.status(404).json({ message: "Product not found" });
-
-    let cart = await Cart.findOne({ user: req.userId });
-
-    if (!cart) {
-      cart = new Cart({
-        user: req.userId,
-        items: [],
-        totalPrice: 0,
-      });
+    if (product.stock === 0) {
+      return res.status(400).json({ message: "Product is out of stock" })
     }
 
-    let variantImages = product.images || [];
-    let basePrice = product.basePrice || 0;
-    let discount = product.discount || 0;
-    let price = product.basePrice || 0;  // finalPrice to display
-    let stock = product.stock || 0;
+    const variant = product.variants.find(
+      (v) => v._id.toString() === variantId
+    );
+    if (!variant) {
+      return res.status(404).json({ message: "Variant not found" })
+    }
+    if (variant.stock === 0) {
+      return res.status(400).json({ message: "Variant is out of stock" })
+    }
+    const originalPrice = variant.price;
+    const discount = variant.discount || 0;
 
-    const isBaseVariant = product.baseVariant &&
-      Object.entries(variants).every(([k, v]) => product.baseVariant.typeValues?.[k] === v);
+    const finalPrice =
+      originalPrice - (originalPrice * discount) / 100;
 
-    if (!isBaseVariant && product.variants?.length > 0) {
-      const matchedVariant = product.variants.find(v =>
-        Object.entries(variants).every(([k, val]) => v.typeValues?.[k] === val)
+    const image =
+      variant.images?.length > 0
+        ? variant.images[0].url
+        : product.images?.[0]?.url;
+
+    const variantLabel = Object.values(variant.attributes || {})
+      .join(" | ");
+
+    if (existingCartItems) {
+      let findExistingItem = existingCartItems.items.find(
+        (item) =>
+          item.product.toString() === productId &&
+          item.variantId.toString() === variantId
       );
 
-      if (matchedVariant && matchedVariant.images?.length > 0) {
-        variantImages = matchedVariant.images;
+      if (findExistingItem) {
+        findExistingItem.quantity += quantity;
+      } else {
+        existingCartItems.items.push({
+          product: productId,
+          variantId,
+          quantity,
+          price: finalPrice,
+          variantLabel,
+          image,
+        });
       }
-      if (matchedVariant) {
-        basePrice = matchedVariant.price;
-        discount = matchedVariant.discount || 0;
-        price = matchedVariant.price;  // This will be updated below
-        stock = matchedVariant.stock || 0;  // Get stock from variant
-      }
-    } else if (isBaseVariant && product.baseVariant) {
-      stock = product.baseVariant.stock || 0;
-    }
 
-    // Calculate final price after discount
-    const finalPrice = basePrice - (basePrice * discount / 100);
-    price = finalPrice;
+      existingCartItems.totalPrice = existingCartItems.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
 
-    // Find existing item - check both product ID AND variants
-    const existingItem = cart.items.find((item) => {
-      const sameProduct = item.product.toString() === productId || item.product._id?.toString() === productId;
-      const sameVariant = variantsMatch(item.variant, variants);
-      console.log(`Checking item: sameProduct=${sameProduct}, sameVariant=${sameVariant}, itemVariant=${JSON.stringify(item.variant)}, newVariant=${JSON.stringify(variants)}`);
-      return sameProduct && sameVariant;
-    });
+      await existingCartItems.save();
 
-    if (existingItem) {
-      console.log(`✅ Found existing item! Updating quantity from ${existingItem.quantity} to ${existingItem.quantity + quantity}`);
-      existingItem.quantity += quantity;
-    } else {
-      console.log("📦 No existing item found, creating new cart item");
-      cart.items.push({
-        product: productId,
-        quantity,
-        variant: variants,
-        basePrice: basePrice,
-        discount: discount,
-        price: price,  // finalPrice after discount
-        stock: stock,  // Add stock info
-        variantImages: variantImages.slice(0, 1)
+      return res.status(200).json({
+        message: "Cart Updated",
+        cart: existingCartItems,
       });
     }
 
-    cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    const newCartItem = new Cart({
+      user: req.userId,
+      items: [
+        {
+          product: productId,
+          variantId,
+          quantity,
+          price: finalPrice,
+          variantLabel,
+          image,
+        },
+      ],
+      totalPrice: finalPrice * quantity,
+    });
 
-    await cart.save();
-    await cart.populate("items.product");
+    await newCartItem.save();
 
-    res.status(201).json(cart);
-
+    return res.status(201).json({
+      message: "Item Added to Cart",
+      cart: newCartItem,
+    });
   } catch (err) {
-    console.error("❌ Error adding to cart:", err);
-    res.status(500).json({ message: "Error adding to cart", error: err.message });
+    console.error(err);
+
+    return res.status(500).json({
+      message: "Failed To Add in Cart",
+      error: err.message,
+    });
   }
 });
 
-router.put("/update/:id", verifyToken, async (req, res) => {
+
+router.put("/update", verifyToken, async (req, res) => {
   try {
-    const { quantity, variant = {} } = req.body;
-
-    if (!quantity || quantity < 1) {
-      return res.status(400).json({ message: "Quantity must be at least 1" });
-    }
-
+    const { productId, variantId, quantity } = req.body;
+    (productId, "pid", variantId, "vid", quantity, "qty")
     const cart = await Cart.findOne({ user: req.userId }).populate("items.product");
     if (!cart) return res.status(404).json({ message: "Cart not found" });
-
-    const item = cart.items.find((i) => {
-      if (!i.product || i.product._id.toString() !== req.params.id) return false;
-      return variantsMatch(i.variant, variant);
-    });
+    const item = cart.items.find((item) => {
+      return item.product._id.toString() === productId.toString() && item.variantId.toString() === variantId.toString()
+    })
 
     if (!item) return res.status(404).json({ message: "Item not in cart" });
 
@@ -149,43 +144,32 @@ router.put("/update/:id", verifyToken, async (req, res) => {
     res.json({ updatedItem: item, totalPrice: cart.totalPrice });
 
   } catch (err) {
-    console.error("Error updating cart item:", err);
-    res.status(500).json({ message: "Error updating cart item", error: err.message });
+    res.status(500).json({ message: "Error Updating Cart", error: err?.message })
   }
-});
+})
 
 
-router.delete("/remove/:id", verifyToken, async (req, res) => {
+router.delete("/remove/:id/:variantId", verifyToken, async (req, res) => {
   try {
-    const { id } = req.params;
-    const { variant = {} } = req.body;
+    const { id, variantId } = req.params;
 
-    console.log(" Removing item:", { id, variant });
+    (" Removing item:", { id, variantId });
 
     const cart = await Cart.findOne({ user: req.userId }).populate("items.product");
     if (!cart) return res.status(404).json({ message: "Cart not found" });
-
-
-    const initialLength = cart.items.length;
+    const item = cart.items.find((item) => {
+      return item.product._id.toString() === id.toString() && item.variantId.toString() === variantId.toString()
+    })
+    if (!item) return res.status(404).json({ message: "Item not in cart" });
     cart.items = cart.items.filter((item) => {
-      if (!item.product) return true;
-      const sameProduct = item.product._id.toString() === id;
-      const sameVariant = variantsMatch(item.variant, variant);
-      return !(sameProduct && sameVariant);
-    });
-
-    if (cart.items.length === initialLength) {
-      return res.status(404).json({ message: "Item not found in cart" });
-    }
-
-    cart.totalPrice = cart.items.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+      return item.product._id.toString() !== id.toString() || item.variantId.toString() !== variantId.toString()
+    })
+    cart.totalPrice = cart.items.reduce((sum, i) => sum + (i.price * i.quantity), 0);
     await cart.save();
-    console.log("✅ Item removed successfully");
     res.json({ message: "Item removed successfully", cart });
 
   } catch (error) {
-    console.error("Remove Error:", error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Error removing item", error: error.message });
   }
 });
 

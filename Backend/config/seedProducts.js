@@ -92,16 +92,16 @@ mongoose.connect("mongodb://127.0.0.1:27017/ecommerce", {
   useUnifiedTopology: true
 })
   .then(() => {
-    console.log("MongoDB connected");
+    ("MongoDB connected");
 
   })
-  .catch(err => console.log(err));
+  .catch(err => (err));
 
 // async function addData() {
 //   try {
 //     await Product.deleteMany({});
 //     await Product.insertMany(sampleProducts);
-//     console.log("Sample products inserted");
+//     ("Sample products inserted");
 //     mongoose.connection.close();
 //   } catch (err) {
 //     console.error("Error inserting data:", err);
@@ -143,8 +143,8 @@ const updatedProduct = async () => {
     await p.save();
   }
 
-  console.log("All products updated");
+  ("All products updated");
 };
 
 const res = updatedProduct()
-console.log(res, "added")
+  (res, "added")

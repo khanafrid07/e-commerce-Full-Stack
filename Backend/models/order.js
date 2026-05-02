@@ -6,17 +6,25 @@ const orderItemSchema = new mongoose.Schema({
     ref: "Product",
   },
 
-  title: String,
+  title: String, // snapshot
 
   quantity: Number,
 
-  variant: {
-    type: Object,
+  variantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
+  status: {
+    type: String,
+    enum: ["active", "cancelled"],
+    default: "active",
   },
 
-  price: Number,
+  variantLabel: String, // 🔥 important
 
-  image: String,
+  price: Number, // snapshot
+
+  image: String, // snapshot
 });
 
 const orderSchema = new mongoose.Schema(
@@ -28,18 +36,44 @@ const orderSchema = new mongoose.Schema(
 
     items: [orderItemSchema],
 
+    shippingAddress: {
+      addressName: String,
+      email: String,
+      phone: String,
+      city: String,
+      state: String,
+      zip: String,
+      country: String,
+    },
+
+    paymentMethod: {
+      type: String,
+      enum: ["Cash", "Card", "Online"],
+    },
+
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "paid", "failed"],
+      default: "pending",
+    },
+
     subtotal: Number,
+
+    shipping: {
+      type: Number,
+      default: 0,
+    },
 
     discount: {
       type: Number,
       default: 0,
     },
 
-    total: Number,
+    totalPrice: Number,
 
     status: {
       type: String,
-      enum: ["pending", "paid", "shipped", "delivered", "cancelled"],
+      enum: ["pending", "confirmed", "shipped", "delivered", "cancelled"],
       default: "pending",
     },
   },

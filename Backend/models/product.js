@@ -17,11 +17,20 @@ const variantSchema = new mongoose.Schema({
     required: true,
     min: 0,
   },
-
+  discount: {
+    type: Number,
+    default: 0,
+  },
+  sku: {
+    type: String,
+    required: true,
+    unique: true,
+  },
   images: [
     {
       url: String,
       fileName: String,
+      public_id: String,
     },
   ],
 });
@@ -43,12 +52,30 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+    },
 
     category: {
       main: String,
       sub: String,
       gender: String,
     },
+    keyFeatures: {
+      type: [String],
+      default: [],
+    },
+    tags: {
+      type: [String],
+      default: [],
+    },
+    discount: {
+      type: Number,
+      default: 0,
+    },
+
 
     images: [
       {
@@ -64,6 +91,10 @@ const productSchema = new mongoose.Schema(
       default: true,
     },
 
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
     soldCount: {
       type: Number,
       default: 0,
@@ -76,7 +107,9 @@ const productSchema = new mongoose.Schema(
       },
     ],
   },
+
   { timestamps: true }
 );
 
+productSchema.index({ title: "text", description: "text", "category.main": "text", "category.sub": "text", "category.gender": "text" });
 module.exports = mongoose.model("Product", productSchema);

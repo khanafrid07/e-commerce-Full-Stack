@@ -6,9 +6,11 @@ const Product = require("../models/product")
 const Cart = require("../models/cart")
 const router = express.Router()
 const Banner = require("../models/banner")
+const { verifyToken } = require("../middlewares/verifyUser.js")
 
-router.get("/stats", async (req, res) => {
+router.get("/stats", verifyToken, async (req, res) => {
     try {
+        console.log("stats")
         const last30day = new Date();
         last30day.setDate(last30day.getDate() - 30);
 
@@ -27,14 +29,14 @@ router.get("/stats", async (req, res) => {
             Product.countDocuments(),
             Order.countDocuments(),
             Order.find().sort({ createdAt: -1 }).limit(5).populate("user", "name email"),
-            Product.find().sort({ soldCount: -1 }).limit(10),
-            Order.countDocuments({ $or: [{ status: "Pending" }, { status: "Shipped" }] }),
-            Cart.countDocuments(),
+            Product.find().sort({ soldCount: -1 }).limit(6),
+            Order.countDocuments({ $or: [{ status: "pending" }, { status: "shipped" }] }),
+            Cart.find({ user: req.userId }).countDocuments(),
             Banner.aggregate([
                 { $group: { _id: "$type", count: { $sum: 1 } } }
             ]),
             Order.aggregate([
-                { $match: { createdAt: { $gte: last30day } } },
+                { $match: { status: "delivered", createdAt: { $gte: last30day } } },
                 { $group: { _id: null, revenue: { $sum: "$totalPrice" } } }
             ])
         ]);
@@ -43,6 +45,8 @@ router.get("/stats", async (req, res) => {
             acc[item._id] = item.count;
             return acc;
         }, {});
+
+        console.log("cartCount", cartCount)
 
         res.status(200).json({
             totalOrders,

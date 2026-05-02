@@ -7,29 +7,29 @@ const cartItemSchema = new mongoose.Schema({
     required: true,
   },
 
+  variantId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
+
   quantity: {
     type: Number,
     required: true,
     min: 1,
   },
 
-  variantKey: {
-    type: String,
-    required: true, // "size:M|color:Red"
+  price: {
+    type: Number,
+    required: true, // snapshot price
   },
-
-  variant: {
-    type: Object, // actual attributes (for UI)
+  variantLabel: {
+    type: String,
     required: true,
   },
 
-  price: {
-    type: Number,
-    required: true, // price at time of adding
-  },
-
   image: {
-    type: String, // thumbnail
+    type: String,
+    default: "",
   },
 });
 

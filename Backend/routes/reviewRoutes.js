@@ -3,24 +3,26 @@ const router = express.Router();
 const Review = require("../models/review.js")
 const Product = require("../models/product.js")
 const User = require("../models/user.js")
-const verifyUser = require("../middlewares/verifyUser.js")
-const validateSchema = require("../middlewares/validate.js")
-const { reviewSchema} =require("../joi.js")
-router.post("/",verifyUser,validateSchema(reviewSchema), async(req, res)=>{
-    try{
-        let {rating,comment, productId} = req.body
+const { verifyToken } = require("../middlewares/verifyUser.js")
+const { validate } = require("../middlewares/validate.js")
+const { reviewSchema } = require("../../Shared/Schema/reviewSchema.js")
+
+router.post("/", verifyToken, validate(reviewSchema), async (req, res) => {
+    try {
+        let { rating, comment, productId } = req.body
+            (req.body, "review")
         const reviewedUser = await User.findById(req.userId)
-        
+        productId = productId.split("-").pop()
+            (productId, "id")
         let reviewProduct = await Product.findById(productId)
-        let review = new Review({username: reviewedUser.name, rating, comment})
+        let review = new Review({ username: reviewedUser.name, rating, comment })
         reviewProduct.reviews.push(review._id)
         await review.save()
         await reviewProduct.save()
-       console.log(review)
-       res.status(200).json({message:"Review Added Successful", review})
+        res.status(200).json({ message: "Review Added Successful", review })
 
-    }catch(err){
-        res.status(500).json({message:"Failed to add Review"})
+    } catch (err) {
+        res.status(500).json({ message: "Failed to add Review", error: err.message })
     }
 
 
